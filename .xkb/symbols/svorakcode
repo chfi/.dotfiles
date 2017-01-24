@@ -99,7 +99,7 @@ xkb_symbols "svorakcode" {
     key <AB09> { [         v,          V ] } ;
     key <AB10> { [         z,          Z ] } ;
 
-    key <BKSL>	{ [apostrophe,   plus,        quotedbl,     multiply ]	};
+    key <BKSL>	{ [apostrophe,   asterisk,        quotedbl,     multiply ]	};
 };
 
 // Ivan Popov, 2005-07-17

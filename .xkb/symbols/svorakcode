@@ -6,43 +6,43 @@ xkb_symbols "basic" {
     include "se(se)"
 };
 
-partial alphanumeric_keys
-xkb_symbols "se" {
+// partial alphanumeric_keys
+// xkb_symbols "se" {
 
-    name[Group1]="Swedish";
+//     name[Group1]="Swedish";
 
-    key <AE05>	{ [         5,    percent,     EuroSign,         cent ]	};
-    key <AE11>	{ [      plus,   question,    backslash, questiondown ]	};
-    key <AE12>	{ [dead_acute, dead_grave,    plusminus,      notsign ]	};
+//     key <AE05>	{ [         5,    percent,     EuroSign,         cent ]	};
+//     key <AE11>	{ [      plus,   question,    backslash, questiondown ]	};
+//     key <AE12>	{ [dead_acute, dead_grave,    plusminus,      notsign ]	};
 
 
-    key <AC10>	{ [odiaeresis, Odiaeresis,       oslash,     Ooblique ]	};
-    key <AC11>	{ [adiaeresis, Adiaeresis,           ae,           AE ]	};
-    key <TLDE>	{ [   section,    onehalf,    paragraph, threequarters]	};
+//     key <AC10>	{ [odiaeresis, Odiaeresis,       oslash,     Ooblique ]	};
+//     key <AC11>	{ [adiaeresis, Adiaeresis,           ae,           AE ]	};
+//     key <TLDE>	{ [   section,    onehalf,    paragraph, threequarters]	};
 
-    key <BKSL>	{ [apostrophe,   asterisk,        acute,     multiply ]	};
+//     key <BKSL>	{ [apostrophe,   asterisk,        acute,     multiply ]	};
 
-    key <SPCE>	{ [     space,      space,        space, nobreakspace ]	};
+//     key <SPCE>	{ [     space,      space,        space, nobreakspace ]	};
 
-    key <LSGT>  { [      less,     greater,         bar,    brokenbar ] };
-    include "kpdl(comma)"
+//     key <LSGT>  { [      less,     greater,         bar,    brokenbar ] };
+//     include "kpdl(comma)"
 
-    include "level3(ralt_switch)"
-};
+//     include "level3(ralt_switch)"
+// };
 
-partial alphanumeric_keys
-xkb_symbols "nodeadkeys" {
+// partial alphanumeric_keys
+// xkb_symbols "nodeadkeys" {
 
-    // Modifies the basic Swedish layout to eliminate all dead keys
+//     // Modifies the basic Swedish layout to eliminate all dead keys
 
-    include "latin(type2)"
-    include "latin(type2_nodeadkeys)"
-    include "se(se)"
+//     include "latin(type2)"
+//     include "latin(type2_nodeadkeys)"
+//     include "se(se)"
 
-    name[Group1]="Swedish (eliminate dead keys)";
+//     name[Group1]="Swedish (eliminate dead keys)";
 
-    key <AE12>	{ [     acute,      grave,    plusminus,      notsign ]	};
-};
+//     key <AE12>	{ [     acute,      grave,    plusminus,      notsign ]	};
+// };
 
 // Swedish Dvorak
 partial alphanumeric_keys
@@ -54,7 +54,7 @@ xkb_symbols "svorakcode" {
 
     key <TLDE> {	[         grave,         asterisk,  asterisk	]	};
 
-    key <AE07>	{ [         7, 7, 7, 7] };
+    key <AE07>	{ [         7, slash, 7, 7] };
     key <AE08>	{ [         8, parenleft, 8, 8] };
     key <AE09>	{ [         9, parenright, 9, 9] };
     key <AE10>	{ [         0, 0, 0, 0] };
@@ -73,7 +73,7 @@ xkb_symbols "svorakcode" {
     key <AD09> { [         r,          R   ] };
     key <AD10> { [         l,          L      ] };
     key <AD11> { [     comma,  semicolon, dead_cedilla,  dead_ogonek ]	};
-    key <AD12> { [ slash, asciitilde, asciicircum,	asciicircum	]	};
+    key <AD12> { [ slash, asciicircum, asciitilde,	asciicircum	]	};
 
     key <AC01> { [         a,          A,       less,           AE ]	};
     key <AC02> { [         o,          O,    greater,           OE ]	};

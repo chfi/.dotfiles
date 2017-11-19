@@ -84,6 +84,12 @@
   :config
   (global-evil-surround-mode 1))
 
+(use-package exec-path-from-shell
+  :ensure t
+  :config
+  (when (memq window-system '(mac ns))
+    (exec-path-from-shell-initialize)))
+
 ;; (use-package flycheck
 ;;   :ensure t
 ;;   :config
@@ -128,14 +134,11 @@
 
 (use-package psc-ide
   :ensure t
-  :defer t
   :config
-  (add-hook 'purescript-mode-hook 'psc-ide-mode)
-  :defer t)
+  (add-hook 'purescript-mode-hook 'psc-ide-mode))
 
 (use-package purescript-mode
   :ensure t
-  :defer t
   :init
   (add-hook 'purescript-mode-hook 'turn-on-purescript-indentation))
 
@@ -351,7 +354,6 @@
      (bibtex-completion-bibliography . "./bibliography.bib")
      (bibtex-completion-bibliography quote
                                      ("./bibliography.bib")))))
- '(smartrep-mode-line-active-bg (solarized-color-blend "#859900" "#073642" 0.2))
  '(term-default-bg-color "#002b36")
  '(term-default-fg-color "#839496")
  '(vc-annotate-background "#2B2B2B")

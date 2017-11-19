@@ -13,6 +13,9 @@
 (eval-when-compile
   (require 'use-package))
 
+(require 'diminish)                ;; if you use :diminish
+(require 'bind-key)                ;; if you use any :bind variant
+
 ;;;;;;;;;;;;;;; Helper functions
 
 (defconst user-init-dir
@@ -58,20 +61,28 @@
 
 
 (use-package evil
+  :diminish undo-tree-mode
   :ensure t
   :init
   (setq evil-want-C-u-scroll t)
   :config
-  (evil-mode t)
-)
-
-(use-package evil-magit
-  :ensure t)
+  (progn
+    (evil-mode t)
+    (setq undo-tree-visualizer-timestamps t)
+    (setq undo-tree-visualizer-diff t)))
 
 (use-package evil-commentary
   :ensure t
   :config
   (evil-commentary-mode))
+
+(use-package evil-magit
+  :ensure t)
+
+(use-package evil-surround
+  :ensure t
+  :config
+  (global-evil-surround-mode 1))
 
 ;; (use-package flycheck
 ;;   :ensure t
@@ -96,7 +107,9 @@
   :ensure t)
 
 (use-package lispy
-  :ensure t)
+  :ensure t
+  :config
+  (add-hook 'emacs-lisp-mode-hook (lambda () (lispy-mode 1))))
 
 (use-package magit
   :ensure t)
@@ -186,16 +199,7 @@
   "C-c" 'ivy-dispatching-done)
 
 
-(general-define-key
-  :keymaps '(org-mode-map latex-mode-map)
-  "C-c C-c" 'ivy-bibtex)
 
-
-(setq bibtex-completion-format-citation-functions
-  '((org-mode      . bibtex-completion-format-citation-cite)
-    (latex-mode    . bibtex-completion-format-citation-cite)
-    (markdown-mode . bibtex-completion-format-citation-cite)
-    (default       . bibtex-completion-format-citation-cite)))
 
 
 ;; remove trailing whitespace when saving a buffer
@@ -227,6 +231,19 @@
 
 
 
+;;;;;;;;;;;;; Org-mode stuff
+
+(general-define-key
+  :keymaps '(org-mode-map latex-mode-map)
+  "C-c C-c" 'ivy-bibtex)
+
+
+(setq bibtex-completion-format-citation-functions
+  '((org-mode      . bibtex-completion-format-citation-cite)
+    (latex-mode    . bibtex-completion-format-citation-cite)
+    (markdown-mode . bibtex-completion-format-citation-cite)
+    (default       . bibtex-completion-format-citation-cite)))
+
 ;; (add-to-list 'org-latex-packages-alist '("" "minted"))
 ;; (setq org-latex-listings 'minted)
 
@@ -245,21 +262,128 @@
 
 
 
+;;;;;;;;;;;;; Themes
+
+(setq dark-theme 'material)
+(setq light-theme 'leuven)
+
+(setq current-theme dark-theme)
+
+(defun toggle-theme ()
+  "Toggle between dark and light themes, as defined by global variables
+`dark-theme` and `light-theme`."
+  (interactive)
+  (disable-theme current-theme)
+  (if
+    (eq current-theme dark-theme)
+    (setq current-theme light-theme)
+    (setq current-theme dark-theme))
+  (load-theme current-theme t))
+
+(load-theme current-theme t)
+
+(use-package zenburn-theme
+  :ensure t
+  :defer t)
+
+(use-package leuven-theme
+  :ensure t
+  :defer t)
+
+(use-package material-theme
+  :ensure t
+  :defer t)
+
+
+
+;;;;;;;;;;;;; Customizer
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(compilation-message-face (quote default))
+ '(cua-global-mark-cursor-color "#2aa198")
+ '(cua-normal-cursor-color "#839496")
+ '(cua-overwrite-cursor-color "#b58900")
+ '(cua-read-only-cursor-color "#859900")
+ '(custom-safe-themes
+   (quote
+    ("2a739405edf418b8581dcd176aaf695d319f99e3488224a3c495cb0f9fd814e3" "9a155066ec746201156bb39f7518c1828a73d67742e11271e4f24b7b178c4710" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "a8245b7cc985a0610d71f9852e9f2767ad1b852c2bdea6f4aadc12cce9c4d6d0" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" default)))
+ '(fci-rule-color "#383838")
+ '(highlight-changes-colors (quote ("#d33682" "#6c71c4")))
+ '(highlight-symbol-colors
+   (--map
+    (solarized-color-blend it "#002b36" 0.25)
+    (quote
+     ("#b58900" "#2aa198" "#dc322f" "#6c71c4" "#859900" "#cb4b16" "#268bd2"))))
+ '(highlight-symbol-foreground-color "#93a1a1")
+ '(highlight-tail-colors
+   (quote
+    (("#073642" . 0)
+     ("#546E00" . 20)
+     ("#00736F" . 30)
+     ("#00629D" . 50)
+     ("#7B6000" . 60)
+     ("#8B2C02" . 70)
+     ("#93115C" . 85)
+     ("#073642" . 100))))
+ '(hl-bg-colors
+   (quote
+    ("#7B6000" "#8B2C02" "#990A1B" "#93115C" "#3F4D91" "#00629D" "#00736F" "#546E00")))
+ '(hl-fg-colors
+   (quote
+    ("#002b36" "#002b36" "#002b36" "#002b36" "#002b36" "#002b36" "#002b36" "#002b36")))
+ '(magit-diff-use-overlays nil)
+ '(nrepl-message-colors
+   (quote
+    ("#CC9393" "#DFAF8F" "#F0DFAF" "#7F9F7F" "#BFEBBF" "#93E0E3" "#94BFF3" "#DC8CC3")))
  '(package-selected-packages
    (quote
-    (general psc-ide nixos-sandbox evil-commentary nix-sandbox nixos-options nix-mode nix-emacs evil-visual-mark-mode)))
+    (zenburn-theme solarized emacs-color-theme-solarized general psc-ide nixos-sandbox evil-commentary nix-sandbox nixos-options nix-mode nix-emacs evil-visual-mark-mode)))
+ '(pdf-view-midnight-colors (quote ("#DCDCCC" . "#383838")))
+ '(pos-tip-background-color "#073642")
+ '(pos-tip-foreground-color "#93a1a1")
  '(safe-local-variable-values
    (quote
     ((bibtex-completion-cite-prompt-for-optional-arguments)
      (bibtex-completion-bibliography . "./bibliography.bib")
      (bibtex-completion-bibliography quote
-                                     ("./bibliography.bib"))))))
+                                     ("./bibliography.bib")))))
+ '(smartrep-mode-line-active-bg (solarized-color-blend "#859900" "#073642" 0.2))
+ '(term-default-bg-color "#002b36")
+ '(term-default-fg-color "#839496")
+ '(vc-annotate-background "#2B2B2B")
+ '(vc-annotate-background-mode nil)
+ '(vc-annotate-color-map
+   (quote
+    ((20 . "#BC8383")
+     (40 . "#CC9393")
+     (60 . "#DFAF8F")
+     (80 . "#D0BF8F")
+     (100 . "#E0CF9F")
+     (120 . "#F0DFAF")
+     (140 . "#5F7F5F")
+     (160 . "#7F9F7F")
+     (180 . "#8FB28F")
+     (200 . "#9FC59F")
+     (220 . "#AFD8AF")
+     (240 . "#BFEBBF")
+     (260 . "#93E0E3")
+     (280 . "#6CA0A3")
+     (300 . "#7CB8BB")
+     (320 . "#8CD0D3")
+     (340 . "#94BFF3")
+     (360 . "#DC8CC3"))))
+ '(vc-annotate-very-old-color "#DC8CC3")
+ '(weechat-color-list
+   (quote
+    (unspecified "#002b36" "#073642" "#990A1B" "#dc322f" "#546E00" "#859900" "#7B6000" "#b58900" "#00629D" "#268bd2" "#93115C" "#d33682" "#00736F" "#2aa198" "#839496" "#657b83")))
+ '(xterm-color-names
+   ["#073642" "#dc322f" "#859900" "#b58900" "#268bd2" "#d33682" "#2aa198" "#eee8d5"])
+ '(xterm-color-names-bright
+   ["#002b36" "#cb4b16" "#586e75" "#657b83" "#839496" "#6c71c4" "#93a1a1" "#fdf6e3"]))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

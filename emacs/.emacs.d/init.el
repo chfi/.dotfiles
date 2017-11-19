@@ -13,10 +13,37 @@
 (eval-when-compile
   (require 'use-package))
 
+;;;;;;;;;;;;;;; Helper functions
+
+(defconst user-init-dir
+  (cond ((boundp 'user-emacs-directory)
+          user-emacs-directory)
+        ((boundp 'user-init-directory)
+         user-init-directory)
+        (t "~/.emacs.d/")))
+
+
+(defun load-user-file (file)
+  (interactive "f")
+  "Load a file in current user's configuration directory"
+  (load-file (expand-file-name file user-init-dir)))
+
+
+;;;;;;;;;;;;;;; Macbook-specific configuration
+
+;; Bunch of stuff better off in another file
+(load-user-file "scripts/macbook.el")
+
+;; Change to a better font on the macbook
+(on-macbook
+ (setq default-frame-alist '((font . "Source Code Pro-14"))))
+
+
+;;;;;;;;;;;;;;; Packages
+
 
 (use-package general
-  :ensure t
-  )
+  :ensure t)
 
 (use-package avy
   :ensure t)
@@ -27,8 +54,7 @@
 (use-package counsel
   :ensure t
   :config
-  (setq counsel-find-file-at-point t)
-)
+  (setq counsel-find-file-at-point t))
 
 
 (use-package evil
@@ -36,19 +62,8 @@
   :init
   (setq evil-want-C-u-scroll t)
   :config
-  (progn
-    (evil-mode t)
-    ;; bind win+{h,t,n,s} to move between windows like i3,
-    ;; but only in normal mode
-    (define-key evil-normal-state-map (kbd "s-h") 'evil-window-left)
-    (define-key evil-normal-state-map (kbd "s-t") 'evil-window-down)
-    (define-key evil-normal-state-map (kbd "s-n") 'evil-window-up)
-    (define-key evil-normal-state-map (kbd "s-s") 'evil-window-right)
-    (define-key evil-insert-state-map (kbd "s-h") 'evil-window-left)
-    (define-key evil-insert-state-map (kbd "s-t") 'evil-window-down)
-    (define-key evil-insert-state-map (kbd "s-n") 'evil-window-up)
-    (define-key evil-insert-state-map (kbd "s-s") 'evil-window-right)
-    ))
+  (evil-mode t)
+)
 
 (use-package evil-magit
   :ensure t)
@@ -64,7 +79,9 @@
 ;;   (add-hook 'purescript-mode 'flycheck-mode))
 
 (use-package haskell-mode
-  :ensure t)
+  :ensure t
+  :defer t
+)
 
 (use-package ivy
   :ensure t
@@ -76,35 +93,42 @@
 )
 
 (use-package ivy-bibtex
-  :ensure t
-  :config
-  )
+  :ensure t)
+
+(use-package lispy
+  :ensure t)
 
 (use-package magit
   :ensure t)
 
 (use-package nix-mode
-  :ensure t)
+  :ensure t
+  :defer t)
 
 (use-package nixos-options
-  :ensure t)
+  :ensure t
+  :defer t)
 
 (use-package nix-sandbox
-  :ensure t)
+  :ensure t
+  :defer t)
 
 (use-package psc-ide
   :ensure t
+  :defer t
   :config
-  (add-hook 'purescript-mode-hook 'psc-ide-mode))
+  (add-hook 'purescript-mode-hook 'psc-ide-mode)
+  :defer t)
 
 (use-package purescript-mode
   :ensure t
+  :defer t
   :init
   (add-hook 'purescript-mode-hook 'turn-on-purescript-indentation))
-  ;; :config (add-hook 'prog-mode-hook 'purescript-mode))
 
 (use-package rust-mode
-  :ensure t)
+  :ensure t
+  :defer t)
 
 (use-package rainbow-delimiters
   :ensure t
@@ -112,12 +136,31 @@
   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
 (use-package swiper
-  :ensure t
-  )
-
-(use-package yaml-mode
   :ensure t)
 
+(use-package yaml-mode
+  :ensure t
+  :defer t)
+
+
+
+;;;;;;;;;;;;; Settings
+
+
+
+;; bind win+{h,j,k,l} to move between windows
+(general-define-key
+  ;; :states '(insert normal emacs help)
+  "s-h" 'evil-window-left
+  "s-j" 'evil-window-down
+  "s-k" 'evil-window-up
+  "s-l" 'evil-window-right)
+
+
+; Swiper search with / in normal mode
+(general-define-key
+  :states 'normal
+  "/" 'swiper)
 
 
 (general-define-key
@@ -131,24 +174,21 @@
   "<f2> i"  'counsel-info-lookup-symbol
   "<f2> u"  'counsel-unicode-char
   "C-c /"   'counsel-rg
-  "C-C C-r" 'ivy-resume
-  ;; "C-c l"   'counsel-locate
-)
+  "C-C C-r" 'ivy-resume)
+  ;; "C-c l"   'counsel-locate)
+
 
 (general-define-key
   :keymaps 'ivy-minibuffer-map
   "C-j" 'ivy-next-line
   "C-k" 'ivy-previous-line
-  ;; :bind (:map ivy-mode-map
   "C-'" 'ivy-avy
-  "C-c" 'ivy-dispatching-done
-)
+  "C-c" 'ivy-dispatching-done)
+
 
 (general-define-key
   :keymaps '(org-mode-map latex-mode-map)
-  "C-c C-c" 'ivy-bibtex
-)
-
+  "C-c C-c" 'ivy-bibtex)
 
 
 (setq bibtex-completion-format-citation-functions
@@ -183,6 +223,7 @@
 (setq sentence-end-double-space nil)	; sentence SHOULD end with only a point.
 (setq default-fill-column 80)		; toggle wrapping text at the 80th character
 (setq initial-scratch-message ";; Begin") ; print a default message in the empty scratch buffer opened at startup
+
 
 
 

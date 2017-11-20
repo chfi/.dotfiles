@@ -27,8 +27,8 @@
 
 
 (defun load-user-file (file)
+  "Load FILE from current user's configuration directory."
   (interactive "f")
-  "Load a file in current user's configuration directory"
   (load-file (expand-file-name file user-init-dir)))
 
 
@@ -41,128 +41,119 @@
 (on-macbook
  (setq default-frame-alist '((font . "Source Code Pro-14"))))
 
+(use-package exec-path-from-shell
+  :if (memq window-system '(mac ns))
+  :config
+  (setq exec-path-from-shell-check-startup-files nil)
+  (exec-path-from-shell-initialize))
 
 ;;;;;;;;;;;;;;; Packages
 
+(setq use-package-always-ensure t)
 
-(use-package general
-  :ensure t)
+(use-package general)
 
-(use-package avy
-  :ensure t)
+(use-package avy)
 
 ;; (use-package company
 ;;   :ensure t)
 
 (use-package counsel
-  :ensure t
-  :config
+  :init
   (setq counsel-find-file-at-point t))
-
 
 (use-package evil
   :diminish undo-tree-mode
-  :ensure t
   :init
   (setq evil-want-C-u-scroll t)
-  :config
-  (progn
-    (evil-mode t)
-    (setq undo-tree-visualizer-timestamps t)
-    (setq undo-tree-visualizer-diff t)))
+  (evil-mode t)
+  (setq undo-tree-visualizer-timestamps t)
+  (setq undo-tree-visualizer-diff t))
 
 (use-package evil-commentary
-  :ensure t
-  :config
+  :init
   (evil-commentary-mode))
 
-(use-package evil-magit
-  :ensure t)
-
 (use-package evil-surround
-  :ensure t
-  :config
+  :init
   (global-evil-surround-mode 1))
 
-(use-package exec-path-from-shell
-  :ensure t
-  :config
-  (when (memq window-system '(mac ns))
-    (exec-path-from-shell-initialize)))
-
-;; (use-package flycheck
-;;   :ensure t
-;;   :config
-;;   (add-hook 'purescript-mode 'flycheck-mode))
+(use-package flycheck
+  :init
+  (global-flycheck-mode))
 
 (use-package haskell-mode
-  :ensure t
-  :defer t
-)
+  :defer t)
 
 (use-package ivy
-  :ensure t
-  :init (ivy-mode 1)
-  :config
-  (setq ivy-use-virtual-buffers t)   ; extend searching to bookmarks
-  (setq ivy-height 20)               ; set height of the ivy window
-  (setq ivy-count-format "(%d/%d) ") ; count format, from the ivy help page
-)
+  :diminish ivy-mode
+  :init
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers t   ; extend searching to bookmarks
+        ivy-height 20               ; set height of the ivy window
+        ivy-count-format "(%d/%d) " ; count format, from the ivy help page
+        ivy-use-selectable-prompt t
+        ))
 
 (use-package ivy-bibtex
-  :ensure t)
-
-(use-package lispy
-  :ensure t
-  :config
-  (add-hook 'emacs-lisp-mode-hook (lambda () (lispy-mode 1))))
+  :init
+  (general-define-key
+    :keymaps '(org-mode-map latex-mode-map)
+    "C-c C-c" 'ivy-bibtex))
 
 (use-package magit
-  :ensure t)
+  :init
+  (use-package evil-magit)
+  (setq magit-completing-read-function 'ivy-completing-read)
+  )
 
 (use-package nix-mode
-  :ensure t
   :defer t)
 
 (use-package nixos-options
-  :ensure t
   :defer t)
 
 (use-package nix-sandbox
-  :ensure t
   :defer t)
 
 (use-package psc-ide
-  :ensure t
-  :config
+  :init
   (add-hook 'purescript-mode-hook 'psc-ide-mode))
 
 (use-package purescript-mode
-  :ensure t
   :init
   (add-hook 'purescript-mode-hook 'turn-on-purescript-indentation))
 
 (use-package rust-mode
-  :ensure t
   :defer t)
 
 (use-package rainbow-delimiters
-  :ensure t
-  :config
+  :init
   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
-(use-package swiper
-  :ensure t)
+(use-package smartparens
+  :init
+  (use-package evil-smartparens
+    :diminish evil-smartparens-mode
+    :init
+    (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode))
+  (require 'smartparens-config))
+  ;; :config
+  ;; (add-hook 'emacs-lisp-mode-hook (lambda () (lispy-mode 1))))
+
+(use-package swiper)
 
 (use-package yaml-mode
-  :ensure t
   :defer t)
 
+(use-package zoom
+  :config
+  (zoom-mode t))
 
 
-;;;;;;;;;;;;; Settings
 
 
+;;;;;;;;;;;;; Keybindings
 
 ;; bind win+{h,j,k,l} to move between windows
 (general-define-key
@@ -172,17 +163,15 @@
   "s-k" 'evil-window-up
   "s-l" 'evil-window-right)
 
-
 ; Swiper search with / in normal mode
 (general-define-key
   :states 'normal
   "/" 'swiper)
 
-
 (general-define-key
-  ;; replace default keybindings
-  "C-s"     'swiper       ; search in current buffer with swiper
-  "M-x"     'counsel-M-x  ; replace M-x with ivy
+  ;; replace default keybindings to use ivy & co
+  "C-s"     'swiper
+  "M-x"     'counsel-M-x
   "C-x C-f" 'counsel-find-file
   "<f1> f"  'counsel-describe-function
   "<f1> v"  'counsel-describe-variable
@@ -191,8 +180,6 @@
   "<f2> u"  'counsel-unicode-char
   "C-c /"   'counsel-rg
   "C-C C-r" 'ivy-resume)
-  ;; "C-c l"   'counsel-locate)
-
 
 (general-define-key
   :keymaps 'ivy-minibuffer-map
@@ -202,8 +189,7 @@
   "C-c" 'ivy-dispatching-done)
 
 
-
-
+;;;;;;;;;;;;; Settings
 
 ;; remove trailing whitespace when saving a buffer
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
@@ -217,29 +203,22 @@
 
 
 ;; from https://sam217pa.github.io/2016/09/02/how-to-build-your-own-spacemacs/
-(setq delete-old-versions -1 )		; delete excess backup versions silently
-(setq version-control t )		; use version control
-(setq vc-make-backup-files t )		; make backups file even when in version controlled dir
+(setq delete-old-versions -1)		; delete excess backup versions silently
+(setq version-control t)		; use version control
+(setq vc-make-backup-files t)		; make backups file even when in version controlled dir
 (setq backup-directory-alist `(("." . "~/.emacs.d/backups")) ) ; which directory to put backups file
-(setq vc-follow-symlinks t )				       ; don't ask for confirmation when opening symlinked file
+(setq vc-follow-symlinks t)				       ; don't ask for confirmation when opening symlinked file
 (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)) ) ;transform backups file name
-(setq inhibit-startup-screen t )	; inhibit useless and old-school startup screen
-(setq ring-bell-function 'ignore )	; silent bell when you make a mistake
-(setq coding-system-for-read 'utf-8 )	; use utf-8 by default
-(setq coding-system-for-write 'utf-8 )
+(setq inhibit-startup-screen t)	; inhibit useless and old-school startup screen
+(setq ring-bell-function 'ignore)	; silent bell when you make a mistake
+(setq coding-system-for-read 'utf-8)	; use utf-8 by default
+(setq coding-system-for-write 'utf-8)
 (setq sentence-end-double-space nil)	; sentence SHOULD end with only a point.
 (setq default-fill-column 80)		; toggle wrapping text at the 80th character
 (setq initial-scratch-message ";; Begin") ; print a default message in the empty scratch buffer opened at startup
 
 
-
-
 ;;;;;;;;;;;;; Org-mode stuff
-
-(general-define-key
-  :keymaps '(org-mode-map latex-mode-map)
-  "C-c C-c" 'ivy-bibtex)
-
 
 (setq bibtex-completion-format-citation-functions
   '((org-mode      . bibtex-completion-format-citation-cite)
@@ -344,7 +323,7 @@
     ("#CC9393" "#DFAF8F" "#F0DFAF" "#7F9F7F" "#BFEBBF" "#93E0E3" "#94BFF3" "#DC8CC3")))
  '(package-selected-packages
    (quote
-    (zenburn-theme solarized emacs-color-theme-solarized general psc-ide nixos-sandbox evil-commentary nix-sandbox nixos-options nix-mode nix-emacs evil-visual-mark-mode)))
+    (golden-ratio evil-smartparens smartparens zenburn-theme solarized emacs-color-theme-solarized general psc-ide nixos-sandbox evil-commentary nix-sandbox nixos-options nix-mode nix-emacs evil-visual-mark-mode)))
  '(pdf-view-midnight-colors (quote ("#DCDCCC" . "#383838")))
  '(pos-tip-background-color "#073642")
  '(pos-tip-foreground-color "#93a1a1")

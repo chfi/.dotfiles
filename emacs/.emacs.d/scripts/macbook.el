@@ -1,7 +1,11 @@
 ;; Macbook Air specific configuration options
+(defun is-macbook ()
+  "Return `t` if running on the macbook."
+  (string-equal (system-name) "Christians-MacBook-Air.local"))
+
 (defun on-macbook (BODY)
-  "Run BODY only on the macbook"
-  (when (string-equal system-name "Christians-MacBook-Air.local"))
+  "Run BODY only on the macbook."
+  (when (is-macbook))
   BODY
 )
 

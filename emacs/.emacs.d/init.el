@@ -65,12 +65,14 @@
 (use-package evil
   :diminish undo-tree-mode
   :init
-  (evil-mode t)
   (setq evil-want-C-u-scroll t)
   (setq undo-tree-visualizer-timestamps t)
-  (setq undo-tree-visualizer-diff t))
+  (setq undo-tree-visualizer-diff t)
+  (evil-mode t)
+  )
 
 (use-package evil-commentary
+  :diminish evil-commentary-mode
   :init
   (evil-commentary-mode))
 
@@ -117,10 +119,15 @@
   :defer t)
 
 (use-package psc-ide
+  :diminish psc-ide-mode
+  :general
+  (:states 'normal
+           "C-c s" 'psc-ide-flycheck-insert-suggestion)
   :init
   (add-hook 'purescript-mode-hook 'psc-ide-mode))
 
 (use-package purescript-mode
+  :diminish purescript-indentation-mode
   :init
   (add-hook 'purescript-mode-hook 'turn-on-purescript-indentation))
 
@@ -147,6 +154,7 @@
   :defer t)
 
 (use-package zoom
+  :diminish zoom-mode
   :init
   (setq zoom-size '(0.618 . 0.618)
         ;; zoom-ignored-major-modes '(dired-mode markdown-mode)
@@ -160,7 +168,7 @@
 ;;;;;;;;;;;;; Keybindings
 
 
-(setq leader-key ",")
+(defvar leader-key ",")
 
 ;; bind win+{h,j,k,l} to move between windows
 (general-define-key

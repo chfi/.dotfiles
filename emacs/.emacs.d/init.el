@@ -199,6 +199,13 @@
   :prefix leader-key
   :states 'normal
   "e" 'flycheck-list-errors)
+
+(general-define-key
+  :prefix leader-key
+  :states 'normal
+  "gs" 'magit-status
+  "gb" 'magit-blame)
+
 ;; fix keybindings for the flycheck error list
 (general-evil-define-key 'normal 'flycheck-error-list-mode-map
   "j" 'flycheck-error-list-next-error

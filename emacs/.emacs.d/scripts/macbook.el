@@ -3,14 +3,8 @@
   "Return `t` if running on the macbook."
   (string-equal (system-name) "Christians-MacBook-Air.local"))
 
-(defun on-macbook (BODY)
-  "Run BODY only on the macbook."
-  (when (is-macbook))
-  BODY
-)
-
 ;; Unbind some mac-specific bindings
-(on-macbook
+(when (is-macbook)
  (progn
    (define-key global-map [?\s-,] nil)
    (define-key global-map [?\s-'] nil)
@@ -58,7 +52,7 @@
 
 ;; Make sure left alt = Super, left cmd = Meta,
 ;; and right alt is alt gr
-(on-macbook
+(when (is-macbook)
  (progn
    ;; (setq mac-option-key-is-meta nil
    (setq mac-option-modifier 'super

@@ -1,3 +1,7 @@
+;; hide toolbars immediately upon emacs start
+(if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+(if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (require 'package)
 
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
@@ -38,8 +42,8 @@
 (load-user-file "scripts/macbook.el")
 
 ;; Change to a better font on the macbook
-(on-macbook
- (setq default-frame-alist '((font . "Source Code Pro-14"))))
+(when (is-macbook)
+  (setq default-frame-alist '((font . "Source Code Pro-14"))))
 
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
@@ -90,12 +94,13 @@
 (use-package ivy
   :diminish ivy-mode
   :init
-  (ivy-mode 1)
   (setq ivy-use-virtual-buffers t   ; extend searching to bookmarks
         ivy-height 20               ; set height of the ivy window
         ivy-count-format "(%d/%d) " ; count format, from the ivy help page
         ivy-use-selectable-prompt t
-        ))
+  )
+  (ivy-mode 1)
+  )
 
 (use-package ivy-bibtex
   :init

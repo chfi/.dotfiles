@@ -2,6 +2,7 @@
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+
 (require 'package)
 
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
@@ -187,11 +188,10 @@
   :states 'normal
   "/" 'swiper)
 
+;; replace default keybindings to use ivy & co
 (general-define-key
-  ;; replace default keybindings to use ivy & co
   "C-s"     'swiper
   "M-x"     'counsel-M-x
-  "C-x C-f" 'counsel-find-file
   "<f1> f"  'counsel-describe-function
   "<f1> v"  'counsel-describe-variable
   "<f1> l"  'counsel-find-library
@@ -199,6 +199,14 @@
   "<f2> u"  'counsel-unicode-char
   "C-c /"   'counsel-rg
   "C-C C-r" 'ivy-resume)
+
+;; <C-f> as prefix for finding files
+(general-define-key
+  :states 'normal
+  :keymaps 'global
+  "C-f C-f" 'counsel-find-file
+  "C-f C-g" 'counsel-git
+  "C-f C-j" 'counsel-file-jump)
 
 (general-define-key
   :keymaps 'ivy-minibuffer-map
@@ -276,6 +284,21 @@
    ;; (javascript . t)
    ))
    ;; (latex . t)))
+
+
+;;;;;;;;;;;;; Functions etc.
+
+(defun sudo-edit (&optional arg)
+  "Edit currently visited file as super user.
+
+With a prefix ARG prompt for a file to visit.
+Will also prompt for a file to visit if current
+buffer is not visiting a file."
+  (interactive "P")
+  (if (or arg (not buffer-file-name))
+      (find-file (concat "/sudo:root@localhost:"
+                         (ido-read-file-name "Find file(as root): ")))
+    (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
 
 

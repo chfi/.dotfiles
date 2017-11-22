@@ -15,3 +15,8 @@ case "$(uname)" in
   #   source ~/.zshenv.linux
   #   ;;
 esac
+
+#case "$(hostname)" in
+  #("jupiter-nix")
+	  
+#esac

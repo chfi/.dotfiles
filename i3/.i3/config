@@ -67,10 +67,10 @@ bindsym $mod+Shift+Up move up
 bindsym $mod+Shift+Right move right
 
 # split in horizontal orientation
-bindsym $mod+d split h
+bindsym $mod+s split h
 
 # split in vertical orientation
-bindsym $mod+k split v
+bindsym $mod+v split v
 
 # enter fullscreen mode for the focused container
 bindsym $mod+u fullscreen toggle
@@ -153,5 +153,5 @@ bindsym $mod+p mode "resize"
 # finds out, if available)
 bar {
         # status_command i3status
-        status_command i3status --config ~/.config/i3/status.conf
+        status_command i3status --config ~/.i3/status.conf
 }

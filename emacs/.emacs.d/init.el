@@ -133,7 +133,7 @@
   (add-hook 'purescript-mode-hook 'psc-ide-mode))
 
 (use-package purescript-mode
-  :diminish purescript-indentation-mode
+  :diminish purescript-indent-mode
   :init
   (add-hook 'purescript-mode-hook 'turn-on-purescript-indentation))
 

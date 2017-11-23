@@ -16,7 +16,8 @@ case "$(uname)" in
   #   ;;
 esac
 
-#case "$(hostname)" in
-  #("jupiter-nix")
-	  
-#esac
+case "$(hostname)" in
+  ("jupiter-nix")
+    source ~/.zshenv.nixos
+    ;;
+esac

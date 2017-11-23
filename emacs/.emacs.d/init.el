@@ -60,8 +60,11 @@
 
 (use-package avy)
 
-;; (use-package company
-;;   :ensure t)
+(use-package company
+  :ensure t
+  :init
+  (add-hook 'prog-mode-hook 'company-mode)
+  )
 
 (use-package counsel
   :init
@@ -208,6 +211,15 @@
   "C-f C-g" 'counsel-git
   "C-f C-j" 'counsel-file-jump)
 
+;; Bindings for company-mode
+(general-define-key
+  :states 'insert
+  :keymaps 'company-mode-map
+  "C-j" 'company-select-next
+  "C-k" 'company-select-previous)
+
+
+;; Nicer bindings for moving thru & dispatching ivy actions
 (general-define-key
   :keymaps 'ivy-minibuffer-map
   "C-j" 'ivy-next-line

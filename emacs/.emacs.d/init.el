@@ -122,7 +122,12 @@
   :defer t)
 
 (use-package nixos-options
-  :defer t)
+  :ensure t)
+
+(use-package company-nixos-options
+  :ensure t
+  :config
+  (add-to-list 'company-backends 'company-nixos-options))
 
 (use-package nix-sandbox
   :defer t)
@@ -360,7 +365,7 @@ buffer is not visiting a file."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (ivy-bibtex exec-path-from-shell zoom zenburn-theme yaml-mode use-package rust-mode rainbow-delimiters purescript-mode psc-ide nixos-options nix-sandbox nix-mode material-theme leuven-theme haskell-mode general evil-surround evil-smartparens evil-magit evil-commentary counsel avy))))
+    (company-nixos-options ivy-bibtex exec-path-from-shell zoom zenburn-theme yaml-mode use-package rust-mode rainbow-delimiters purescript-mode psc-ide nixos-options nix-sandbox nix-mode material-theme leuven-theme haskell-mode general evil-surround evil-smartparens evil-magit evil-commentary counsel avy))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

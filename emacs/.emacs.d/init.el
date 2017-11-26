@@ -95,6 +95,20 @@
 (use-package haskell-mode
   :defer t)
 
+(use-package dante
+  :defer t
+  :after haskell-mode
+  :commands 'dante-mode
+  :init
+  (add-hook 'haskell-mode-hook 'dante-mode)
+  :config
+  (add-to-list 'company-backends 'dante-company)
+  :general
+  (:states '(normal insert)
+   :keymaps 'haskell-mode-map
+   "C-c C-t" 'dante-type-at
+   "C-c s" 'dante-auto-fix))
+
 (use-package ivy
   :diminish ivy-mode
   :init
@@ -233,6 +247,14 @@
   "C-c" 'ivy-dispatching-done)
 
 
+;; Nicer Svorak-y bindings for x-ref
+(general-define-key
+  :states '(normal insert)
+  "M-ä" 'xref-pop-marker-stack
+  "M-ö" 'xref-find-definitions
+  "M-å" 'xref-find-references)
+
+
 (general-define-key
   :prefix leader-key
   :states 'normal
@@ -365,7 +387,7 @@ buffer is not visiting a file."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (company-nixos-options ivy-bibtex exec-path-from-shell zoom zenburn-theme yaml-mode use-package rust-mode rainbow-delimiters purescript-mode psc-ide nixos-options nix-sandbox nix-mode material-theme leuven-theme haskell-mode general evil-surround evil-smartparens evil-magit evil-commentary counsel avy))))
+    (dante ivy-bibtex exec-path-from-shell zoom zenburn-theme yaml-mode use-package rust-mode rainbow-delimiters purescript-mode psc-ide nixos-options nix-sandbox nix-mode material-theme leuven-theme haskell-mode general evil-surround evil-smartparens evil-magit evil-commentary counsel avy))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

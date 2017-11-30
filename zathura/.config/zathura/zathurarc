@@ -1,0 +1,5 @@
+# Use ctrl-c/v clipboard rather than middle-click
+set selection-clipboard clipboard
+
+# set zoom-center true
+set scroll-step 100

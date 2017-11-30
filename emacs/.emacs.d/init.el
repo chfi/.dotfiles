@@ -328,21 +328,30 @@
     (markdown-mode . bibtex-completion-format-citation-cite)
     (default       . bibtex-completion-format-citation-cite)))
 
-;; (add-to-list 'org-latex-packages-alist '("" "minted"))
-;; (setq org-latex-listings 'minted)
 
-;; (setq org-latex-pdf-process
-;;       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-;;         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-;;         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+(use-package org
+  :config
+  (setq org-src-fontify-natively t))
+
+(use-package ox-latex
+  :defer t
+  :after org
+  :config
+  (setq org-latex-listings 'minted
+        org-latex-packages-alist '(("" "minted")))
+
+  (add-to-list 'org-latex-minted-langs
+               '(purescript "haskell"))
+  (add-to-list 'org-latex-minted-langs
+               '(javascript "javascript"))
+  (add-to-list 'org-latex-minted-langs
+               '(haskell "haskell")))
 
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((haskell . t)
-   ;; (purescript . t)
-   ;; (javascript . t)
+   (emacs-lisp . t)
    ))
-   ;; (latex . t)))
 
 
 ;;;;;;;;;;;;; Functions etc.

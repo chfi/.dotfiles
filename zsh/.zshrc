@@ -13,3 +13,12 @@ antigen bundle vi-mode
 antigen theme gallois
 
 antigen apply
+
+
+emacs-command-line () {
+    local VISUAL="emacsclient -t"
+    edit-command-line
+}
+
+zle -N emacs-command-line
+bindkey -M vicmd v emacs-command-line

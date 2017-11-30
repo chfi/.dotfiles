@@ -68,7 +68,9 @@
   :ensure t
   :init
   (add-hook 'prog-mode-hook 'company-mode)
-  )
+  :config
+  (setq company-idle-delay 0))
+
 
 (use-package counsel
   :init
@@ -125,10 +127,14 @@
   )
 
 (use-package ivy-bibtex
+  :defer t
+  :commands 'ivy-bibtex
   :init
   (general-define-key
+    :states '(normal insert)
     :keymaps '(org-mode-map latex-mode-map)
-    "C-c C-c" 'ivy-bibtex))
+    "C-c C-b" 'ivy-bibtex)
+  (setq ivy-bibtex-default-action 'ivy-bibtex-insert-citation))
 
 (use-package magit
   :init
@@ -184,6 +190,16 @@
 
 (use-package yaml-mode
   :defer t)
+
+(use-package yasnippet
+  :diminish 'yas-minor-mode
+  :defer t
+  :init
+  (yas-global-mode 1)
+  :general
+  (:states 'insert
+           "C-c o" 'company-yasnippet
+           "C-c e" 'yas-expand))
 
 (use-package zoom
   :diminish zoom-mode
@@ -391,7 +407,11 @@ buffer is not visiting a file."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (dante ivy-bibtex exec-path-from-shell zoom zenburn-theme yaml-mode use-package rust-mode rainbow-delimiters purescript-mode psc-ide nixos-options nix-sandbox nix-mode material-theme leuven-theme haskell-mode general evil-surround evil-smartparens evil-magit evil-commentary counsel avy))))
+    (yasnippet dante ivy-bibtex exec-path-from-shell zoom zenburn-theme yaml-mode use-package rust-mode rainbow-delimiters purescript-mode psc-ide nixos-options nix-sandbox nix-mode material-theme leuven-theme haskell-mode general evil-surround evil-smartparens evil-magit evil-commentary counsel avy)))
+ '(safe-local-variable-values
+   (quote
+    ((bibtex-completion-cite-prompt-for-optional-arguments)
+     (bibtex-completion-bibliography . "./bibliography.bib")))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

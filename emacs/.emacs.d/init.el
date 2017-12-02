@@ -160,7 +160,19 @@
   (add-hook 'purescript-mode-hook 'turn-on-purescript-indentation))
 
 (use-package rust-mode
-  :defer t)
+  :defer t
+  :commands 'rust-mode
+  :config
+  (add-hook 'rust-mode-hook 'racer-mode)
+  ;; (add-to-list 'company-backends '
+  )
+
+(use-package racer
+  :defer t
+  :general
+  (:states '(normal insert)
+   :keymaps 'rust-mode-map
+   "M-ö" 'racer-find-definition))
 
 (use-package rainbow-delimiters
   :init

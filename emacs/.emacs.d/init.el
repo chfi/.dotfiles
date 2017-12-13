@@ -96,7 +96,12 @@
 
 (use-package flycheck
   :init
-  (global-flycheck-mode))
+  (global-flycheck-mode)
+  :config
+  ;; For some reason, having flycheck check syntax every new line in purescript-mode
+  ;; is very slow -- but only on nixos, not the macbook!
+  (unless (is-macbook)
+    (setq flycheck-check-syntax-automatically '(save idle-change mode-enabled))))
 
 (use-package haskell-mode
   :defer t)
@@ -149,7 +154,7 @@
   :ensure t)
 
 (use-package company-nixos-options
-  :ensure t
+  :defer t
   :config
   (add-to-list 'company-backends 'company-nixos-options))
 
@@ -251,7 +256,6 @@
   "<f1> l"  'counsel-find-library
   "<f2> i"  'counsel-info-lookup-symbol
   "<f2> u"  'counsel-unicode-char
-  "C-c /"   'counsel-rg
   "C-C C-r" 'ivy-resume)
 
 ;; <C-f> as prefix for finding files
@@ -260,7 +264,8 @@
   :keymaps 'global
   "C-f C-f" 'counsel-find-file
   "C-f C-g" 'counsel-git
-  "C-f C-j" 'counsel-file-jump)
+  "C-f C-j" 'counsel-file-jump
+  "C-f C-r" 'counsel-rg)
 
 ;; Bindings for company-mode
 (general-define-key

@@ -165,7 +165,11 @@
   :diminish psc-ide-mode
   :general
   (:states 'normal
+   :keymaps 'psc-ide-mode-map
            "C-c s" 'psc-ide-flycheck-insert-suggestion)
+  (:states '(normal insert)
+   :keymaps 'psc-ide-mode-map
+   "M-ö" 'psc-ide-goto-definition)
   :init
   (add-hook 'purescript-mode-hook 'psc-ide-mode))
 
@@ -179,7 +183,6 @@
   :commands 'rust-mode
   :config
   (add-hook 'rust-mode-hook 'racer-mode)
-  ;; (add-to-list 'company-backends '
   )
 
 (use-package racer

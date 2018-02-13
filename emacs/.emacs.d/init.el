@@ -270,6 +270,11 @@
   "C-f C-j" 'counsel-file-jump
   "C-f C-r" 'counsel-rg)
 
+(general-define-key
+  :states 'normal
+  :keymaps 'dired
+  "r" 'revert-buffer)
+
 ;; Bindings for company-mode
 (general-define-key
   :states 'insert

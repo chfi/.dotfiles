@@ -14,7 +14,7 @@ xkb_symbols "svorakcode" {
 
     name[Group1]="Swedish (Dvorak)";
 
-    key <TLDE> {	[         grave,         asterisk,  asterisk	]	};
+    key <TLDE>	{ [   grave,    onehalf,    paragraph, threequarters]	};
 
     key <AE07>	{ [         7, slash, bracketright, 7] };
     key <AE08>	{ [         8, parenleft, braceleft, 8] };

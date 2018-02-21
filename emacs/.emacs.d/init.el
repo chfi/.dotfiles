@@ -82,6 +82,8 @@
   (setq evil-want-C-u-scroll t)
   (setq undo-tree-visualizer-timestamps t)
   (setq undo-tree-visualizer-diff t)
+  (setq evil-search-module 'evil-search)
+  (setq evil-ex-search-persistent-highlight nil)
   (evil-mode t)
   )
 
@@ -114,6 +116,7 @@
   (add-hook 'haskell-mode-hook 'dante-mode)
   :config
   (add-to-list 'company-backends 'dante-company)
+  (setq dante-repl-command-line '("stack" "repl"))
   :general
   (:states '(normal insert)
    :keymaps 'haskell-mode-map
@@ -169,7 +172,8 @@
            "C-c s" 'psc-ide-flycheck-insert-suggestion)
   (:states '(normal insert)
    :keymaps 'psc-ide-mode-map
-   "M-ö" 'psc-ide-goto-definition)
+   "M-ö" 'psc-ide-goto-definition
+   "s-ö" 'psc-ide-goto-definition)
   :init
   (add-hook 'purescript-mode-hook 'psc-ide-mode))
 
@@ -292,12 +296,15 @@
   "C-c" 'ivy-dispatching-done)
 
 
-;; Nicer Svorak-y bindings for x-ref
+;; Nicer Svorak-y bindings for x-ref, duplicated for linux & mac
 (general-define-key
   :states '(normal insert)
   "M-ä" 'xref-pop-marker-stack
   "M-ö" 'xref-find-definitions
-  "M-å" 'xref-find-references)
+  "M-å" 'xref-find-references
+  "s-ä" 'xref-pop-marker-stack
+  "s-ö" 'xref-find-definitions
+  "s-å" 'xref-find-references)
 
 
 (general-define-key
@@ -321,12 +328,11 @@
 ;; remove trailing whitespace when saving a buffer
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-;; spaces instead of tabs, hail satan
-(setq-default indent-tabs-mode nil)
 
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(toggle-scroll-bar -1)
+;; spaces instead of tabs and other default indent config
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 2)
+(setq standard-indent 2)
 
 
 ;; from https://sam217pa.github.io/2016/09/02/how-to-build-your-own-spacemacs/

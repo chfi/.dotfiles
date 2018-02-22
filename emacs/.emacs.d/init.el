@@ -82,10 +82,9 @@
   (setq evil-want-C-u-scroll t)
   (setq undo-tree-visualizer-timestamps t)
   (setq undo-tree-visualizer-diff t)
-  (setq evil-search-module 'evil-search)
+  (setq isearch-forward t) ;; Required to search downward by default when using swiper & the `n` key...
   (setq evil-ex-search-persistent-highlight nil)
-  (evil-mode t)
-  )
+  (evil-mode t))
 
 (use-package evil-commentary
   :diminish evil-commentary-mode

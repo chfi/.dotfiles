@@ -22,3 +22,6 @@ emacs-command-line () {
 
 zle -N emacs-command-line
 bindkey -M vicmd v emacs-command-line
+
+bindkey "\eOH" beginning-of-line
+bindkey "\eOF" end-of-line

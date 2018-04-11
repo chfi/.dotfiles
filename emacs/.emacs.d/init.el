@@ -19,7 +19,7 @@
   (require 'use-package))
 
 (require 'diminish)                ;; if you use :diminish
-(require 'bind-key)                ;; if you use any :bind variant
+
 
 ;;;;;;;;;;;;;;; Server/Emacs daemon stuff
 
@@ -44,11 +44,18 @@
 ;;;;;;;;;;;;;;; Macbook-specific configuration
 
 ;; Bunch of stuff better off in another file
+(setq jupiter-nix-hostname "jupiter-nix")
+(setq macbook-hostname "Christians-MacBook-Air.local")
+
 (load-user-file "scripts/macbook.el")
 
-;; Change to a better font on the macbook
-(when (is-macbook)
-  (setq default-frame-alist '((font . "Source Code Pro-14"))))
+;; Can use (when (is-macbook) ..) and (text-scale-set `mul`) to change font size on laptop
+;; (setq default-frame-alist '((font . "Source Code Pro-12")))
+
+(set-face-attribute 'default nil
+                    :family "Source Code Pro"
+                    :height 130 :weight 'normal)
+
 
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
@@ -76,15 +83,30 @@
   :init
   (setq counsel-find-file-at-point t))
 
+(use-package default-text-scale
+  :init
+  (default-text-scale-mode))
+
 (use-package evil
   :diminish undo-tree-mode
   :init
-  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-u-scroll nil)
+  (setq evil-want-C-d-scroll nil)
+  (setq evil-want-C-i-jump nil)
   (setq undo-tree-visualizer-timestamps t)
   (setq undo-tree-visualizer-diff t)
   (setq isearch-forward t) ;; Required to search downward by default when using swiper & the `n` key...
   (setq evil-ex-search-persistent-highlight nil)
-  (evil-mode t))
+  (evil-mode t)
+  (add-hook 'org-capture-mode-hook 'evil-insert-state)
+  (use-package evil-org
+    :ensure t
+    :after org
+    :config
+    (add-hook 'org-mode-hook 'evil-org-mode)
+    (evil-org-set-key-theme '(textobjects insert navigation additional shift todo heading))
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys)))
 
 (use-package evil-commentary
   :diminish evil-commentary-mode
@@ -122,16 +144,18 @@
    "C-c C-t" 'dante-type-at
    "C-c s" 'dante-auto-fix))
 
+(use-package hydra
+  :ensure t
+  :defer nil)
+
 (use-package ivy
   :diminish ivy-mode
   :init
   (setq ivy-use-virtual-buffers t   ; extend searching to bookmarks
         ivy-height 20               ; set height of the ivy window
         ivy-count-format "(%d/%d) " ; count format, from the ivy help page
-        ivy-use-selectable-prompt t
-  )
-  (ivy-mode 1)
-  )
+        ivy-use-selectable-prompt t)
+  (ivy-mode 1))
 
 (use-package ivy-bibtex
   :defer t
@@ -143,11 +167,23 @@
     "C-c C-b" 'ivy-bibtex)
   (setq ivy-bibtex-default-action 'ivy-bibtex-insert-citation))
 
+(use-package jq-mode
+  :defer t
+  :commands 'jq-mode
+  :mode (("\\.jq\\'" . jq-mode)))
+
 (use-package magit
   :init
   (use-package evil-magit)
-  (setq magit-completing-read-function 'ivy-completing-read)
-  )
+  (setq magit-completing-read-function 'ivy-completing-read))
+
+(use-package markdown-mode
+  :ensure t
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown"))
+
 
 (use-package nix-mode
   :defer t)
@@ -162,6 +198,7 @@
 
 (use-package nix-sandbox
   :defer t)
+
 
 (use-package psc-ide
   :diminish psc-ide-mode
@@ -181,6 +218,7 @@
   :init
   (add-hook 'purescript-mode-hook 'turn-on-purescript-indentation))
 
+
 (use-package rust-mode
   :defer t
   :commands 'rust-mode
@@ -199,17 +237,25 @@
   :init
   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
-(use-package smartparens
-  :init
-  (use-package evil-smartparens
-    :diminish evil-smartparens-mode
-    :init
-    (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode))
-  (require 'smartparens-config))
-  ;; :config
-  ;; (add-hook 'emacs-lisp-mode-hook (lambda () (lispy-mode 1))))
+;; (use-package smartparens
+;;   :init
+;;   (use-package evil-smartparens
+;;     :diminish evil-smartparens-mode
+;;     :init
+;;     (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode))
+;;   (require 'smartparens-config))
 
-(use-package swiper)
+
+;; (use-package lispy
+;;   :init
+;;   (add-hook 'emacs-lisp-mode-hook (lambda () (lispy-mode 1)))
+;;   (use-package lispyville
+;;     :init
+;;     (add-hook 'lispymode-hook 'lispyville-mode)))
+
+
+(use-package swiper
+  :ensure t)
 
 (use-package yaml-mode
   :defer t)
@@ -236,17 +282,67 @@
   (zoom-mode t))
 
 
+
+(use-package nand2tetris
+  :defer t
+  :config
+  (use-package nand2tetris-assembler
+    :defer t)
+  (use-package company-nand2tetris
+    :defer t))
+
+
 ;;;;;;;;;;;;; Keybindings
 
 
 (defvar leader-key ",")
 
-;; bind win+{h,j,k,l} to move between windows
+;; (defun i3-windmove (dir &optional count)
+;;   "Change EMACS focus to the next window in direction DIR.
+;; If there is no window there, signal i3 to change window focus.
+;; COUNT is ignored currently."
+;;   (when (member dir '(left right up down))
+;;     (condition-case nil
+;;         (windmove-do-window-select dir)
+;;       (user-error
+;;        (call-process-shell-command
+;;         (concat "i3-msg 'focus " (symbol-name dir) "'")
+;;         nil 0 nil)))))
+
+;; (evil-define-command i3-window-left (count)
+;;   (interactive "p")
+;;   (i3-windmove 'left))
+
+;; (evil-define-command i3-window-right (count)
+;;   (interactive "p")
+;;   (i3-windmove 'right))
+
+;; (evil-define-command i3-window-up (count)
+;;   (interactive "p")
+;;   (i3-windmove 'up))
+
+;; (evil-define-command i3-window-down (count)
+;;   (interactive "p")
+;;   (i3-windmove 'down))
+
+
 (general-define-key
   "s-h" 'evil-window-left
+  "s-l" 'evil-window-right
   "s-j" 'evil-window-down
-  "s-k" 'evil-window-up
-  "s-l" 'evil-window-right)
+  "s-k" 'evil-window-up)
+
+;; (if (is-macbook)
+;;   (general-define-key
+;;     "s-h" 'evil-window-left
+;;     "s-l" 'evil-window-right
+;;     "s-j" 'evil-window-down
+;;     "s-k" 'evil-window-up)
+;;   (general-define-key
+;;     "s-h" 'i3-window-left
+;;     "s-l" 'i3-window-right
+;;     "s-j" 'i3-window-down
+;;     "s-k" 'i3-window-up))
 
 ; Swiper search with / in normal mode
 (general-define-key
@@ -322,6 +418,27 @@
   "j" 'flycheck-error-list-next-error
   "k" 'flycheck-error-list-previous-error
   "<return>" 'flycheck-error-list-goto-error)
+
+
+(general-define-key
+  :states 'normal
+  "SPC" 'evil-scroll-down
+  "S-SPC" 'evil-scroll-up)
+
+
+;; Better org-mode bindings, compat w/ i3 etc.
+;; (general-define-key
+;;   :states '(normal insert)
+;;   :keymaps 'org-mode-map
+;;   "s-<return>" 'org-insert-heading
+;;   "C-c C-q" 'counsel-org-tag
+;;   )
+
+
+(general-define-key
+  :states '(normal insert)
+  "C-c a" 'org-agenda)
+
 ;;;;;;;;;;;;; Settings
 
 ;; remove trailing whitespace when saving a buffer
@@ -332,6 +449,7 @@
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 2)
 (setq standard-indent 2)
+
 
 
 ;; from https://sam217pa.github.io/2016/09/02/how-to-build-your-own-spacemacs/
@@ -348,6 +466,11 @@
 (setq sentence-end-double-space nil)	; sentence SHOULD end with only a point.
 (setq fill-column 80)		; toggle wrapping text at the 80th character
 (setq initial-scratch-message ";; Begin") ; print a default message in the empty scratch buffer opened at startup
+
+
+;; Set org-directory to SyncThing directory (maybe better to symlink? idk)
+(setq org-directory "~/Sync/org/")
+(setq initial-buffer-choice (concat org-directory "journal/templates/reflection-morning.org"))
 
 
 ;;;;;;;;;;;;; Org-mode stuff
@@ -376,12 +499,141 @@
                '(javascript "javascript"))
   (add-to-list 'org-latex-minted-langs
                '(haskell "haskell")))
+  ;;       org-latex-pdf-process
+  ;;       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+  ;;         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f")))
 
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((haskell . t)
    (emacs-lisp . t)
    ))
+
+(setq org-capture-templates
+      '(;; other entries
+        ("t" "Todo" entry (file+headline "~/Sync/org/todo.org" "Tasks")
+         "* TODO %?\n  %i\n  %a")
+        ("j" "Journal entry" entry
+         (file+datetree+prompt "~/Sync/org/journal.org")
+         ;; "%K - %a\n%i\n%?\n")))
+         "* %U\n  %i\n  %a\n %?\n")))
+
+(setq org-startup-indented t)
+(setq org-tags-column 1)
+
+;; file name for today's file
+;; (format-time-string "%Y-%m-%d-entry.org" (current-time))
+
+
+(setq journal-dir "~/Sync/org/journal/")
+(setq journal-template-dir (concat journal-dir "templates/"))
+(setq date-format "%Y-%m-%d/")
+(defun date-string ()
+  "Return the current date as a string."
+  (format-time-string date-format (current-time)))
+
+(defun journal-today-file (file)
+  "(Create and) open FILE in the journal directory corresponding to today's date."
+  (find-file (concat journal-dir (date-string) file)))
+
+(defun journal-today-file-template (file template)
+  "(Create and) open FILE in the journal directory corresponding to today's date,
+filling it with the contents of TEMPLATE if it does not exist."
+  (let ((filename (concat journal-dir (date-string) file)))
+    (if (file-exists-p filename)
+        (find-file filename)
+      (progn
+        (copy-file template filename)
+        (find-file filename)))))
+
+(defun journal-today-morning (&optional arg)
+  "Open the file for today's morning reflection."
+  (interactive "p")
+  (journal-today-file-template "reflection-morning.org" (concat journal-template-dir "reflection-morning.org")))
+
+
+(defun journal-today-evening (&optional arg)
+  "Open the file for today's evening reflection."
+  (interactive "p")
+  (journal-today-file-template "reflection-evening.org" (concat journal-template-dir "reflection-evening.org")))
+
+(defun journal-today-schedule (&optional arg)
+  "Open the file for today's block schedule."
+  (interactive "p")
+  (journal-today-file-template "block-schedule.org" (concat journal-template-dir "block-schedule.org")))
+
+(defun journal-today-main (&optional arg)
+  "Open the file for today's main journal entries."
+  (interactive "p")
+  (journal-today-file "journal.org"))
+
+
+
+(add-hook 'evil-org-mode-hook
+  (lambda ()
+
+    (general-evil-define-key 'normal 'evil-org-mode-map
+      "-" 'org-ctrl-c-minus
+      "|" 'org-table-goto-column)
+
+    (general-define-key
+     :states '(normal insert)
+     "C-c c" 'org-capture
+     "C-c C-q" 'counsel-org-tag)
+
+    (general-define-key
+     :prefix leader-key
+     :states 'normal
+     :keymaps 'evil-org-mode-map
+     "." 'hydra-org-state/body
+     "t" 'org-todo
+     "T" 'org-show-todo-tree
+     "v" 'org-mark-element
+     "a" 'org-agenda
+     "c" 'org-archive-subtree
+     "l" 'evil-org-open-links
+     "C" 'org-resolve-clocks)
+
+    (defhydra hydra-org-state (:hint nil)
+      "
+^_i_, _I_: Cycle fold states
+
+^_h_, _j_, _k_, _l_: Navigate elements
+
+^_n_, _p_: Next/Previous link
+^_o_: Open link at point
+
+^_H_, _J_, _K_, _L_: Shift TODO
+^_t_: Cycle TODO
+
+^_N_, _P_: Next/Previous code block
+"
+      ;; basic navigation
+      ("i" org-cycle)
+      ("I" org-shifttab)
+      ("h" org-up-element )
+      ("l" org-down-element )
+      ("j" org-forward-element)
+      ("k" org-backward-element)
+      ;; navigating links
+      ("n" org-next-link)
+      ("p" org-previous-link)
+      ("o" org-open-at-point)
+      ;; navigation blocks
+      ("N" org-next-block)
+      ("P" org-previous-block)
+      ;; updates
+      ("." org-ctrl-c-ctrl-c)
+      ("*" org-ctrl-c-star)
+      ("-" org-ctrl-c-minus)
+      ;; change todo state
+      ("H" org-shiftleft)
+      ("L" org-shiftright)
+      ("J" org-shiftdown)
+      ("K" org-shiftup)
+      ("t" org-todo))
+    ))
+
 
 
 ;;;;;;;;;;;;; Functions etc.
@@ -403,9 +655,10 @@ buffer is not visiting a file."
 ;;;;;;;;;;;;; Themes
 
 (use-package zenburn-theme
-  :defer t)
-  ;; :config
-  ;; (load-theme 'zenburn t t))
+  :defer t
+  :init
+  (load-theme 'zenburn t t))
+
 
 (use-package leuven-theme
   :defer t)
@@ -413,8 +666,11 @@ buffer is not visiting a file."
   ;; (load-theme 'leuven t t))
 
 (use-package material-theme
-  :init
-  (load-theme 'material t))
+  :defer t)
+
+(enable-theme 'zenburn)
+  ;; :init
+  ;; (load-theme 'material t))
   ;; :config
   ;; (load-theme 'material t t)
   ;; (load-theme 'material-light t t))

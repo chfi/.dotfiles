@@ -3,31 +3,25 @@
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 
-(require 'package)
-
-;; because for some reason ELPA doesn't work right (signing/keyring problem)
-(setq package-archives '())
-(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-(add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/"))
-
-(package-initialize)
-
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-(eval-when-compile
-  (require 'use-package))
-
-(require 'diminish)                ;; if you use :diminish
+;; Use straight.el for package management
+(let ((bootstrap-file (concat user-emacs-directory "straight/repos/straight.el/bootstrap.el"))
+      (bootstrap-version 3))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
 
-;;;;;;;;;;;;;;; Server/Emacs daemon stuff
+(straight-use-package 'use-package)
+(setq straight-use-package-by-default t)
 
 (server-start)
 
-;;;;;;;;;;;;;;; Helper functions
+;; ;;;;;;;;;;;;;;; Helper functions
 
 (defconst user-init-dir
   (cond ((boundp 'user-emacs-directory)
@@ -43,7 +37,7 @@
   (load-file (expand-file-name file user-init-dir)))
 
 
-;;;;;;;;;;;;;;; Macbook-specific configuration
+;; ;;;;;;;;;;;;;;; Macbook-specific configuration
 
 ;; Bunch of stuff better off in another file
 (setq jupiter-nix-hostname "jupiter-nix")
@@ -65,21 +59,17 @@
   (setq exec-path-from-shell-check-startup-files nil)
   (exec-path-from-shell-initialize))
 
-;;;;;;;;;;;;;;; Packages
-
-(setq use-package-always-ensure t)
+;; ;;;;;;;;;;;;;;; Packages
 
 (use-package general)
 
 (use-package avy)
 
 (use-package company
-  :ensure t
   :init
   (add-hook 'prog-mode-hook 'company-mode)
   :config
   (setq company-idle-delay 0))
-
 
 (use-package counsel
   :init
@@ -101,23 +91,23 @@
   (setq evil-ex-search-persistent-highlight nil)
   (evil-mode t)
   (add-hook 'org-capture-mode-hook 'evil-insert-state)
-  (use-package evil-org
-    :ensure t
-    :after org
-    :config
-    (add-hook 'org-mode-hook 'evil-org-mode)
-    (evil-org-set-key-theme '(textobjects insert navigation additional shift todo heading))
-    (require 'evil-org-agenda)
-    (evil-org-agenda-set-keys)
-    (evil-define-key 'motion org-agenda-mode-map
-      "F" 'org-agenda-follow-mode)
-    )
   :config
   (general-define-key
     :states 'normal
     "SPC" 'evil-scroll-down
-    "S-SPC" 'evil-scroll-up)
-  )
+    "S-SPC" 'evil-scroll-up))
+
+
+(use-package evil-org
+  :after evil
+  :after org
+  :config
+  (add-hook 'org-mode-hook 'evil-org-mode)
+  (evil-org-set-key-theme '(textobjects insert navigation additional shift todo heading))
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys)
+  (evil-define-key 'motion org-agenda-mode-map
+    "F" 'org-agenda-follow-mode))
 
 (use-package evil-commentary
   :diminish evil-commentary-mode
@@ -155,9 +145,7 @@
    "C-c C-t" 'dante-type-at
    "C-c s" 'dante-auto-fix))
 
-(use-package hydra
-  :ensure t
-  :defer nil)
+(use-package hydra)
 
 (use-package ivy
   :diminish ivy-mode
@@ -178,32 +166,33 @@
     "C-c C-b" 'ivy-bibtex)
   (setq ivy-bibtex-default-action 'ivy-bibtex-insert-citation))
 
-(use-package jq-mode
-  :defer t
-  :commands 'jq-mode
-  :mode (("\\.jq\\'" . jq-mode)))
+;; (use-package jq-mode
+;;   :defer t
+;;   :commands 'jq-mode
+;;   :mode (("\\.jq\\'" . jq-mode)))
 
 (use-package magit
   :init
   (use-package evil-magit)
   (setq magit-completing-read-function 'ivy-completing-read))
 
-(use-package markdown-mode
-  :ensure t
-  :mode (("README\\.md\\'" . gfm-mode)
-         ("\\.md\\'" . markdown-mode)
-         ("\\.markdown\\'" . markdown-mode))
-  :init (setq markdown-command "multimarkdown"))
+;; (use-package markdown-mode
+;;   :ensure t
+;;   :mode (("README\\.md\\'" . gfm-mode)
+;;          ("\\.md\\'" . markdown-mode)
+;;          ("\\.markdown\\'" . markdown-mode))
+;;   :init (setq markdown-command "multimarkdown"))
 
 
 (use-package nix-mode
   :defer t)
 
 (use-package nixos-options
-  :ensure t)
+  :defer t)
 
 (use-package company-nixos-options
   :defer t
+  :after company
   :config
   (add-to-list 'company-backends 'company-nixos-options))
 
@@ -212,6 +201,7 @@
 
 
 (use-package psc-ide
+  :defer t
   :diminish psc-ide-mode
   :general
   (:states 'normal
@@ -225,6 +215,7 @@
   (add-hook 'purescript-mode-hook 'psc-ide-mode))
 
 (use-package purescript-mode
+  :defer t
   :diminish purescript-indent-mode
   :init
   (add-hook 'purescript-mode-hook 'turn-on-purescript-indentation))
@@ -234,8 +225,7 @@
   :defer t
   :commands 'rust-mode
   :config
-  (add-hook 'rust-mode-hook 'racer-mode)
-  )
+  (add-hook 'rust-mode-hook 'racer-mode))
 
 (use-package racer
   :defer t
@@ -265,8 +255,7 @@
 ;;     (add-hook 'lispymode-hook 'lispyville-mode)))
 
 
-(use-package swiper
-  :ensure t)
+(use-package swiper)
 
 (use-package yaml-mode
   :defer t)
@@ -284,26 +273,19 @@
 (use-package zoom
   :diminish zoom-mode
   :init
-  (setq zoom-size '(0.618 . 0.618)
-        ;; zoom-ignored-major-modes '(dired-mode markdown-mode)
-        ;; zoom-ignored-buffer-names '("zoom.el" "init.el")
-        ;; zoom-ignored-buffer-name-regexps '("^*calc"))
-        ;; zoom-ignore-predicates '(lambda () (> (count-lines (point-min) (point-max)) 20)))
-	)
+  (setq zoom-size '(0.618 . 0.618))
   (zoom-mode t))
 
+;; (use-package nand2tetris
+;;   :defer t
+;;   :config
+;;   (use-package nand2tetris-assembler
+;;     :defer t)
+;;   (use-package company-nand2tetris
+;;     :defer t))
 
 
-(use-package nand2tetris
-  :defer t
-  :config
-  (use-package nand2tetris-assembler
-    :defer t)
-  (use-package company-nand2tetris
-    :defer t))
-
-
-;;;;;;;;;;;;; Keybindings
+;; ;;;;;;;;;;;;; Keybindings
 
 
 (defvar leader-key ",")
@@ -355,7 +337,7 @@
 ;;     "s-j" 'i3-window-down
 ;;     "s-k" 'i3-window-up))
 
-; Swiper search with / in normal mode
+;; Swiper search with / in normal mode
 (general-define-key
   :states 'normal
   "/" 'swiper)
@@ -376,14 +358,15 @@
   :keymaps 'global
   "Å" 'pop-global-mark)
 
-;; <C-f> as prefix for finding files
-(general-define-key
-  :states 'normal
-  :keymaps 'global
-  "C-f C-f" 'counsel-find-file
-  "C-f C-g" 'counsel-git
-  "C-f C-j" 'counsel-file-jump
-  "C-f C-r" 'counsel-rg)
+;;  Staying commented since I never use anything but find-file
+;; ;; <C-f> as prefix for finding files
+;; (general-define-key
+;;   :states 'normal
+;;   :keymaps 'global
+;;   "C-f C-f" 'counsel-find-file
+;;   "C-f C-g" 'counsel-git
+;;   "C-f C-j" 'counsel-file-jump
+;;   "C-f C-r" 'counsel-rg)
 
 (general-define-key
   :states 'normal
@@ -404,7 +387,7 @@
   "C-j" 'ivy-next-line
   "C-k" 'ivy-previous-line
   "C-'" 'ivy-avy
-  "C-c" 'ivy-dispatching-done)
+  "C-s" 'ivy-dispatching-done)
 
 
 ;; Nicer Svorak-y bindings for x-ref, duplicated for linux & mac
@@ -436,12 +419,6 @@
   "<return>" 'flycheck-error-list-goto-error)
 
 
-(general-define-key
-  :states 'normal
-  "SPC" 'evil-scroll-down
-  "S-SPC" 'evil-scroll-up)
-
-
 ;; Better org-mode bindings, compat w/ i3 etc.
 ;; (general-define-key
 ;;   :states '(normal insert)
@@ -453,9 +430,10 @@
 
 (general-define-key
   :states '(normal insert)
+  :keymaps 'global
   "C-c a" 'org-agenda)
 
-;;;;;;;;;;;;; Settings
+;; ;;;;;;;;;;;;; Settings
 
 ;; remove trailing whitespace when saving a buffer
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
@@ -485,12 +463,11 @@
 
 
 (setq org-directory "~/Sync/org/")
-;; (setq initial-buffer-choice (concat org-directory "journal/templates/reflection-morning.org"))
 (add-hook 'after-init-hook 'org-agenda-list)
 
 
 
-;;;;;;;;;;;;; Journal management
+;; ;;;;;;;;;;;;; Journal management
 
 
 (setq journal-dir "~/Sync/org/journal/")
@@ -570,6 +547,26 @@ filling it with the contents of TEMPLATE if it does not exist."
     (default       . bibtex-completion-format-citation-cite)))
 
 
+(require 'subr-x)
+(straight-use-package 'git)
+
+(defun org-release ()
+    "The release version of org-mode.
+Inserted by installing org-mode or when a release is made."
+  (require 'git)
+  (let ((git-repo (expand-file-name
+                   "straight/repos/org/" user-emacs-directory)))
+    (string-trim
+     (string-remove-prefix
+      "release_"
+      (git-run "describe"
+               "--match=release\*"
+               "--abbrev=0"
+               "HEAD")))))
+
+(provide 'org-version)
+
+
 (use-package org
   :config
   (setq org-src-fontify-natively t)
@@ -584,13 +581,15 @@ filling it with the contents of TEMPLATE if it does not exist."
   (setq org-indirect-buffer-display 'current-window)
 
   (setq org-agenda-window-setup 'other-window)
-  (setq org-agenda-restore-windows-after-quit t))
+  (setq org-agenda-restore-windows-after-quit t)
+
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((haskell . t)
+     (emacs-lisp . t))))
 
 
-(use-package ox-latex
-  :defer t
-  :after org
-  :config
+(with-eval-after-load 'ox-latex
   (setq org-latex-listings 'minted
         org-latex-packages-alist '(("" "minted")))
 
@@ -600,31 +599,20 @@ filling it with the contents of TEMPLATE if it does not exist."
                '(javascript "javascript"))
   (add-to-list 'org-latex-minted-langs
                '(haskell "haskell")))
-  ;;       org-latex-pdf-process
-  ;;       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-  ;;         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f")))
-
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((haskell . t)
-   (emacs-lisp . t)
-   ))
-
+;;       org-latex-pdf-process
+;;       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+;;         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f")))
 
 (setq org-startup-indented t)
 (setq org-tags-column 1)
-
 
 (setq org-capture-templates
       '(("t" "Todo" entry (file+headline "~/Sync/org/todo.org" "Tasks")
          "* TODO %?\n  %i\n  %a")
 
         ("j" "Journal entry" entry
-         (file (concat (cf/journal-today-get-dir) "journal.org"))
+         (file (lambda () (concat (cf/journal-today-get-dir) "journal.org")))
          "* %(time-of-day-string)\n** Mood/discomfort Before\n%? \n** Entry\n** Mood/discomfort After\n\n")))
-
-
-
 
 
 (add-hook 'evil-org-mode-hook
@@ -697,7 +685,7 @@ filling it with the contents of TEMPLATE if it does not exist."
 
 
 
-;;;;;;;;;;;;; Functions etc.
+;; ;;;;;;;;;;;;; Functions etc.
 
 (defun sudo-edit (&optional arg)
   "Edit currently visited file as super user.
@@ -713,65 +701,39 @@ buffer is not visiting a file."
 
 
 
-;;;;;;;;;;;;; Themes
+;; ;;;;;;;;;;;;; Themes
 
 (use-package zenburn-theme
-  :defer t
   :init
   (load-theme 'zenburn t t))
 
-
-(use-package leuven-theme
-  :defer t)
-  ;; :config
-  ;; (load-theme 'leuven t t))
-
 (use-package material-theme
-  :defer t)
+  :init
+  (load-theme 'material t t)
+  (load-theme 'material-light t t))
+
 
 (enable-theme 'zenburn)
-  ;; :init
-  ;; (load-theme 'material t))
-  ;; :config
-  ;; (load-theme 'material t t)
-  ;; (load-theme 'material-light t t))
-
-;; (setq dark-theme 'material)
-;; (setq light-theme 'leuven)
-
-;; (setq current-theme dark-theme)
-
-;; (defun toggle-theme ()
-;;   "Toggle between dark and light themes, as defined by global variables
-;; `dark-theme` and `light-theme`."
-;;   (interactive)
-;;   (disable-theme current-theme)
-;;   (if
-;;     (eq current-theme dark-theme)
-;;     (setq current-theme light-theme)
-;;     (setq current-theme dark-theme))
-;;   (load-theme current-theme t))
-
-;; (load-theme current-theme t)
 
 
-;;;;;;;;;;;;; Customizer
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (ox-latex default-text-scale evil-org jq-mode markdown-mode window-purpose company-nand2tetris nand2tetris-assembler nand2tetris yasnippet dante ivy-bibtex exec-path-from-shell zoom zenburn-theme yaml-mode use-package rust-mode rainbow-delimiters purescript-mode psc-ide nixos-options nix-sandbox nix-mode material-theme leuven-theme haskell-mode general evil-surround evil-smartparens evil-magit evil-commentary counsel avy)))
- '(safe-local-variable-values
-   (quote
-    ((org-use-property-inheritance . t)
-     (bibtex-completion-cite-prompt-for-optional-arguments)
-     (bibtex-completion-bibliography . "./bibliography.bib")))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+
+;; ;;;;;;;;;;;;; Customizer
+;; (custom-set-variables
+;;  ;; custom-set-variables was added by Custom.
+;;  ;; If you edit it by hand, you could mess it up, so be careful.
+;;  ;; Your init file should contain only one such instance.
+;;  ;; If there is more than one, they won't work right.
+;;  '(package-selected-packages
+;;    (quote
+;;     (ox-latex default-text-scale evil-org jq-mode markdown-mode window-purpose company-nand2tetris nand2tetris-assembler nand2tetris yasnippet dante ivy-bibtex exec-path-from-shell zoom zenburn-theme yaml-mode use-package rust-mode rainbow-delimiters purescript-mode psc-ide nixos-options nix-sandbox nix-mode material-theme leuven-theme haskell-mode general evil-surround evil-smartparens evil-magit evil-commentary counsel avy)))
+;;  '(safe-local-variable-values
+;;    (quote
+;;     ((org-use-property-inheritance . t)
+;;      (bibtex-completion-cite-prompt-for-optional-arguments)
+;;      (bibtex-completion-bibliography . "./bibliography.bib")))))
+;; (custom-set-faces
+;;  ;; custom-set-faces was added by Custom.
+;;  ;; If you edit it by hand, you could mess it up, so be careful.
+;;  ;; Your init file should contain only one such instance.
+;;  ;; If there is more than one, they won't work right.
+;;  )

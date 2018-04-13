@@ -5,6 +5,8 @@
 
 (require 'package)
 
+;; because for some reason ELPA doesn't work right (signing/keyring problem)
+(setq package-archives '())
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 (add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/"))
@@ -106,7 +108,16 @@
     (add-hook 'org-mode-hook 'evil-org-mode)
     (evil-org-set-key-theme '(textobjects insert navigation additional shift todo heading))
     (require 'evil-org-agenda)
-    (evil-org-agenda-set-keys)))
+    (evil-org-agenda-set-keys)
+    (evil-define-key 'motion org-agenda-mode-map
+      "F" 'org-agenda-follow-mode)
+    )
+  :config
+  (general-define-key
+    :states 'normal
+    "SPC" 'evil-scroll-down
+    "S-SPC" 'evil-scroll-up)
+  )
 
 (use-package evil-commentary
   :diminish evil-commentary-mode
@@ -360,6 +371,11 @@
   "<f2> u"  'counsel-unicode-char
   "C-C C-r" 'ivy-resume)
 
+(general-define-key
+  :states 'normal
+  :keymaps 'global
+  "Å" 'pop-global-mark)
+
 ;; <C-f> as prefix for finding files
 (general-define-key
   :states 'normal
@@ -372,7 +388,7 @@
 (general-define-key
   :states 'normal
   :keymaps 'dired
-  "r" 'revert-buffer)
+  "g r" 'revert-buffer)
 
 ;; Bindings for company-mode
 (general-define-key
@@ -468,9 +484,81 @@
 (setq initial-scratch-message ";; Begin") ; print a default message in the empty scratch buffer opened at startup
 
 
-;; Set org-directory to SyncThing directory (maybe better to symlink? idk)
 (setq org-directory "~/Sync/org/")
-(setq initial-buffer-choice (concat org-directory "journal/templates/reflection-morning.org"))
+;; (setq initial-buffer-choice (concat org-directory "journal/templates/reflection-morning.org"))
+(add-hook 'after-init-hook 'org-agenda-list)
+
+
+
+;;;;;;;;;;;;; Journal management
+
+
+(setq journal-dir "~/Sync/org/journal/")
+(setq journal-template-dir (concat journal-dir "templates/"))
+(setq date-format "%Y-%m-%d")
+(defun date-string ()
+  "Return the current date as a string."
+  (format-time-string date-format (current-time)))
+
+(setq time-of-day-format "%H:%M")
+(defun time-of-day-string ()
+  "Return the current time of day as a string."
+  (format-time-string time-of-day-format (current-time)))
+
+(defun cf/journal-today-get-dir ()
+  "Return the directory for today's journal entry, creating it if it does not exist."
+  (let ((today-dir (concat journal-dir (date-string) "/")))
+    (unless (file-exists-p today-dir)
+      (make-directory today-dir t))
+    today-dir))
+
+(defun open-tasks (&optional arg)
+  "Open my tasks list."
+  (interactive "p")
+  (find-file (concat org-directory "todo.org")))
+
+(defun journal-today-file (file)
+  "(Create and) open FILE in the journal directory corresponding to today's date."
+  (find-file (concat (cf/journal-today-get-dir) file)))
+
+(defun journal-today-file-template (file template)
+  "(Create and) open FILE in the journal directory corresponding to today's date,
+filling it with the contents of TEMPLATE if it does not exist."
+  (let* ((today-dir (cf/journal-today-get-dir))
+         (filename (concat today-dir file)))
+    (if (file-exists-p filename)
+        (find-file filename)
+      (progn
+        (copy-file template filename)
+        (find-file filename)))))
+
+(defun journal-today-morning (&optional arg)
+  "Open the file for today's morning reflection."
+  (interactive "p")
+  (journal-today-file-template
+   "reflection-morning.org"
+   (concat journal-template-dir "reflection-morning.org")))
+
+
+(defun journal-today-evening (&optional arg)
+  "Open the file for today's evening reflection."
+  (interactive "p")
+  (journal-today-file-template
+   "reflection-evening.org"
+   (concat journal-template-dir "reflection-evening.org")))
+
+(defun journal-today-schedule (&optional arg)
+  "Open the file for today's block schedule."
+  (interactive "p")
+  (journal-today-file-template
+   "block-schedule.org"
+   (concat journal-template-dir "block-schedule.org")))
+
+(defun journal-today-main (&optional arg)
+  "Open the file for today's main journal entries."
+  (interactive "p")
+  (journal-today-file "journal.org"))
+
 
 
 ;;;;;;;;;;;;; Org-mode stuff
@@ -484,7 +572,20 @@
 
 (use-package org
   :config
-  (setq org-src-fontify-natively t))
+  (setq org-src-fontify-natively t)
+  (add-to-list 'org-agenda-files org-directory)
+  (setq org-refile-targets (quote ((nil :maxlevel . 9)
+                                   (org-agenda-files :maxlevel . 9))))
+  (setq org-refile-use-outline-path t)
+  (setq org-outline-path-complete-in-steps nil)
+
+  (setq org-refile-allow-creating-parent-nodes 'confirm)
+
+  (setq org-indirect-buffer-display 'current-window)
+
+  (setq org-agenda-window-setup 'other-window)
+  (setq org-agenda-restore-windows-after-quit t))
+
 
 (use-package ox-latex
   :defer t
@@ -509,63 +610,20 @@
    (emacs-lisp . t)
    ))
 
-(setq org-capture-templates
-      '(;; other entries
-        ("t" "Todo" entry (file+headline "~/Sync/org/todo.org" "Tasks")
-         "* TODO %?\n  %i\n  %a")
-        ("j" "Journal entry" entry
-         (file+datetree+prompt "~/Sync/org/journal.org")
-         ;; "%K - %a\n%i\n%?\n")))
-         "* %U\n  %i\n  %a\n %?\n")))
 
 (setq org-startup-indented t)
 (setq org-tags-column 1)
 
-;; file name for today's file
-;; (format-time-string "%Y-%m-%d-entry.org" (current-time))
+
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline "~/Sync/org/todo.org" "Tasks")
+         "* TODO %?\n  %i\n  %a")
+
+        ("j" "Journal entry" entry
+         (file (concat (cf/journal-today-get-dir) "journal.org"))
+         "* %(time-of-day-string)\n** Mood/discomfort Before\n%? \n** Entry\n** Mood/discomfort After\n\n")))
 
 
-(setq journal-dir "~/Sync/org/journal/")
-(setq journal-template-dir (concat journal-dir "templates/"))
-(setq date-format "%Y-%m-%d/")
-(defun date-string ()
-  "Return the current date as a string."
-  (format-time-string date-format (current-time)))
-
-(defun journal-today-file (file)
-  "(Create and) open FILE in the journal directory corresponding to today's date."
-  (find-file (concat journal-dir (date-string) file)))
-
-(defun journal-today-file-template (file template)
-  "(Create and) open FILE in the journal directory corresponding to today's date,
-filling it with the contents of TEMPLATE if it does not exist."
-  (let ((filename (concat journal-dir (date-string) file)))
-    (if (file-exists-p filename)
-        (find-file filename)
-      (progn
-        (copy-file template filename)
-        (find-file filename)))))
-
-(defun journal-today-morning (&optional arg)
-  "Open the file for today's morning reflection."
-  (interactive "p")
-  (journal-today-file-template "reflection-morning.org" (concat journal-template-dir "reflection-morning.org")))
-
-
-(defun journal-today-evening (&optional arg)
-  "Open the file for today's evening reflection."
-  (interactive "p")
-  (journal-today-file-template "reflection-evening.org" (concat journal-template-dir "reflection-evening.org")))
-
-(defun journal-today-schedule (&optional arg)
-  "Open the file for today's block schedule."
-  (interactive "p")
-  (journal-today-file-template "block-schedule.org" (concat journal-template-dir "block-schedule.org")))
-
-(defun journal-today-main (&optional arg)
-  "Open the file for today's main journal entries."
-  (interactive "p")
-  (journal-today-file "journal.org"))
 
 
 
@@ -576,10 +634,13 @@ filling it with the contents of TEMPLATE if it does not exist."
       "-" 'org-ctrl-c-minus
       "|" 'org-table-goto-column)
 
+    (general-evil-define-key '(normal insert) 'evil-org-mode-map
+     "C-c C-q" 'counsel-org-tag)
+
     (general-define-key
      :states '(normal insert)
      "C-c c" 'org-capture
-     "C-c C-q" 'counsel-org-tag)
+     "C-c l" 'org-store-link)
 
     (general-define-key
      :prefix leader-key
@@ -702,10 +763,11 @@ buffer is not visiting a file."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (yasnippet dante ivy-bibtex exec-path-from-shell zoom zenburn-theme yaml-mode use-package rust-mode rainbow-delimiters purescript-mode psc-ide nixos-options nix-sandbox nix-mode material-theme leuven-theme haskell-mode general evil-surround evil-smartparens evil-magit evil-commentary counsel avy)))
+    (ox-latex default-text-scale evil-org jq-mode markdown-mode window-purpose company-nand2tetris nand2tetris-assembler nand2tetris yasnippet dante ivy-bibtex exec-path-from-shell zoom zenburn-theme yaml-mode use-package rust-mode rainbow-delimiters purescript-mode psc-ide nixos-options nix-sandbox nix-mode material-theme leuven-theme haskell-mode general evil-surround evil-smartparens evil-magit evil-commentary counsel avy)))
  '(safe-local-variable-values
    (quote
-    ((bibtex-completion-cite-prompt-for-optional-arguments)
+    ((org-use-property-inheritance . t)
+     (bibtex-completion-cite-prompt-for-optional-arguments)
      (bibtex-completion-bibliography . "./bibliography.bib")))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

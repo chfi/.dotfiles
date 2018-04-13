@@ -80,7 +80,7 @@ set $zenburn-magenta  #DC8CC3
 client.focused          $zenburn-bg+4  $zenburn-bg+4  $zenburn-fg+1  #ccadad $zenburn-bg+4
 
 # client.focused_inactive #333333 #0F0F0F #E3CCA1  #907070    #333333
-client.focused_inactive $zenburn-bg+1 $zenburn-bg+1 $zenburn-fg     #907070 $zenburn-bg+1
+client.focused_inactive $zenburn-bg+2 $zenburn-bg+2 $zenburn-fg     #907070 $zenburn-bg+1
 
 # client.unfocused        #333333 #010101 #85753A  #555555    #333333
 client.unfocused        $zenburn-bg-1 $zenburn-bg-1 $zenburn-fg #555555    $zenburn-bg-1
@@ -115,23 +115,39 @@ bindsym $mod+Return exec alacritty
 bindsym $mod+Shift+aring kill
 
 # start dmenu (a program launcher)
-bindsym $mod+e exec dmenu_run
+# bindsym $mod+e exec dmenu_run
 # There also is the (new) i3-dmenu-desktop which only displays applications
 # shipping a .desktop file. It is a wrapper around dmenu, so you need that
 # installed.
 # bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
 
+# bindsym $mod+e exec rofi -show run
+bindsym $mod+e exec "rofi -combi-modi window,drun -show combi -modi combi"
+# bindsym $mod+e exec rofi -show drun
+
 # change focus
-bindsym $mod+h focus left
 bindsym $mod+j focus down
 bindsym $mod+k focus up
+bindsym $mod+h focus left
 bindsym $mod+l focus right
+
+bindsym $mod+u workspace back_and_forth
+
+# bindsym $mod+j exec bash ~/.i3/focus down
+# bindsym $mod+k exec bash ~/.i3/focus up
+# bindsym $mod+h exec bash ~/.i3/focus left
+# bindsym $mod+l exec bash ~/.i3/focus right
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
 bindsym $mod+Down focus down
 bindsym $mod+Up focus up
 bindsym $mod+Right focus right
+
+# bindsym $mod+Left exec bash ~/.i3/focus left
+# bindsym $mod+Down exec bash ~/.i3/focus down
+# bindsym $mod+Up exec bash ~/.i3/focus up
+# bindsym $mod+Right exec bash ~/.i3/focus right
 
 # move focused window
 bindsym $mod+Shift+h move left
@@ -152,7 +168,7 @@ bindsym $mod+s split h
 bindsym $mod+v split v
 
 # enter fullscreen mode for the focused container
-bindsym $mod+u fullscreen toggle
+bindsym $mod+f fullscreen toggle
 
 # change container layout (stacked, tabbed, toggle split)
 bindsym $mod+o layout stacking
@@ -266,6 +282,12 @@ bar {
         # urgent_workspace   #2f343a #900000 #ffffff
         # binding_mode       #2f343a #900000 #ffffff
     }
-        # status_command i3status
-        status_command i3status --config ~/.i3/status.conf
+
+    tray_output primary
+    # status_command i3status
+    status_command i3status --config ~/.i3/status.conf
 }
+
+
+
+# Make pinentry window behave nicely

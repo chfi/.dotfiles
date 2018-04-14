@@ -153,7 +153,8 @@
   (setq ivy-use-virtual-buffers t   ; extend searching to bookmarks
         ivy-height 20               ; set height of the ivy window
         ivy-count-format "(%d/%d) " ; count format, from the ivy help page
-        ivy-use-selectable-prompt t)
+        ivy-use-selectable-prompt t
+        ivy-initial-inputs-alist nil)
   (ivy-mode 1))
 
 (use-package ivy-bibtex
@@ -288,7 +289,8 @@
 ;; ;;;;;;;;;;;;; Keybindings
 
 
-(defvar leader-key ",")
+(general-override-mode)
+(defvar leader-key "ä") ;; `ä` on Svorak is roughly comparable to `,` on QWERTY, ergonomically
 
 ;; (defun i3-windmove (dir &optional count)
 ;;   "Change EMACS focus to the next window in direction DIR.
@@ -350,13 +352,15 @@
   "<f1> v"  'counsel-describe-variable
   "<f1> l"  'counsel-find-library
   "<f2> i"  'counsel-info-lookup-symbol
-  "<f2> u"  'counsel-unicode-char
-  "C-C C-r" 'ivy-resume)
+  "<f2> u"  'counsel-unicode-char)
 
 (general-define-key
   :states 'normal
-  :keymaps 'global
-  "Å" 'pop-global-mark)
+  :keymaps 'override
+  "Å" 'pop-global-mark
+  "R" 'ivy-resume ;; i have never, ever, used `evil-replace-state`.
+  "M-y" 'nil
+  )
 
 ;;  Staying commented since I never use anything but find-file
 ;; ;; <C-f> as prefix for finding files
@@ -452,7 +456,6 @@
 (setq vc-make-backup-files t)		; make backups file even when in version controlled dir
 (setq backup-directory-alist `(("." . "~/.emacs.d/backups")) ) ; which directory to put backups file
 (setq vc-follow-symlinks t)				       ; don't ask for confirmation when opening symlinked file
-(setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)) ) ;transform backups file name
 (setq inhibit-startup-screen t)	; inhibit useless and old-school startup screen
 (setq ring-bell-function 'ignore)	; silent bell when you make a mistake
 (setq coding-system-for-read 'utf-8)	; use utf-8 by default
@@ -460,6 +463,8 @@
 (setq sentence-end-double-space nil)	; sentence SHOULD end with only a point.
 (setq fill-column 80)		; toggle wrapping text at the 80th character
 (setq initial-scratch-message ";; Begin") ; print a default message in the empty scratch buffer opened at startup
+
+(setq auto-save-default nil) ; disable auto-save
 
 
 (setq org-directory "~/Sync/org/")
@@ -566,9 +571,9 @@ Inserted by installing org-mode or when a release is made."
 
 (provide 'org-version)
 
-
 (use-package org
   :config
+  (require 'cl) ;; without this, using shift+up/down to modify timestamp minutes crashes
   (setq org-src-fontify-natively t)
   (add-to-list 'org-agenda-files org-directory)
   (setq org-refile-targets (quote ((nil :maxlevel . 9)
@@ -582,6 +587,18 @@ Inserted by installing org-mode or when a release is made."
 
   (setq org-agenda-window-setup 'other-window)
   (setq org-agenda-restore-windows-after-quit t)
+
+
+  (require 'org-crypt)
+  (org-crypt-use-before-save-magic)
+  (setq org-crypt-key "christian@chfi.se")
+
+  (add-hook 'org-ctrl-c-ctrl-c-final-hook
+            (lambda ()
+              (when (and (not (org-at-heading-or-item-p))
+                         (org-at-encrypted-entry-p))
+                (org-decrypt-entry))))
+
 
   (org-babel-do-load-languages
    'org-babel-load-languages

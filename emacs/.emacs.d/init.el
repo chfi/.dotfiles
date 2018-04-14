@@ -633,7 +633,13 @@ Inserted by installing org-mode or when a release is made."
 
         ("j" "Journal entry" entry
          (file (lambda () (concat (cf/journal-today-get-dir) "journal.org")))
-         "* %(time-of-day-string)\n** Mood/discomfort Before\n%? \n** Entry\n** Mood/discomfort After\n\n")))
+         "* %(time-of-day-string)
+** Mood
+| Mood | Before % | After % |
+|-
+| %?     |          |         |\n
+** Entry \n")))
+
 
 
 (add-hook 'evil-org-mode-hook
@@ -737,24 +743,18 @@ buffer is not visiting a file."
 (enable-theme 'zenburn)
 
 
-
-;; ;;;;;;;;;;;;; Customizer
-;; (custom-set-variables
-;;  ;; custom-set-variables was added by Custom.
-;;  ;; If you edit it by hand, you could mess it up, so be careful.
-;;  ;; Your init file should contain only one such instance.
-;;  ;; If there is more than one, they won't work right.
-;;  '(package-selected-packages
-;;    (quote
-;;     (ox-latex default-text-scale evil-org jq-mode markdown-mode window-purpose company-nand2tetris nand2tetris-assembler nand2tetris yasnippet dante ivy-bibtex exec-path-from-shell zoom zenburn-theme yaml-mode use-package rust-mode rainbow-delimiters purescript-mode psc-ide nixos-options nix-sandbox nix-mode material-theme leuven-theme haskell-mode general evil-surround evil-smartparens evil-magit evil-commentary counsel avy)))
-;;  '(safe-local-variable-values
-;;    (quote
-;;     ((org-use-property-inheritance . t)
-;;      (bibtex-completion-cite-prompt-for-optional-arguments)
-;;      (bibtex-completion-bibliography . "./bibliography.bib")))))
-;; (custom-set-faces
-;;  ;; custom-set-faces was added by Custom.
-;;  ;; If you edit it by hand, you could mess it up, so be careful.
-;;  ;; Your init file should contain only one such instance.
-;;  ;; If there is more than one, they won't work right.
-;;  )
+;;;;;;;;;;;;; Customizer
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(org-agenda-files
+   (quote
+    ("~/Sync/org/journal/2018-04-14/block-schedule.org" "~/Sync/org/journal/2018-04-13/block-schedule.org" "/home/christian/Sync/org/genome-browser.org" "/home/christian/Sync/org/groceries.org" "/home/christian/Sync/org/index.org" "/home/christian/Sync/org/refile.org" "/home/christian/Sync/org/todo.org"))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

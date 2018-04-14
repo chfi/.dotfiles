@@ -116,7 +116,11 @@
 
 (use-package evil-surround
   :init
-  (global-evil-surround-mode 1))
+  (global-evil-surround-mode 1)
+  :general
+  (:states 'visual
+   :keymaps 'override
+   "s" 'evil-surround-region))
 
 (use-package flycheck
   :init

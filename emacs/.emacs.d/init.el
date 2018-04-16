@@ -65,6 +65,11 @@
 
 (use-package avy)
 
+(use-package ace-window
+  :general
+  (:keymaps 'override
+   "M-n" 'ace-window))
+
 (use-package company
   :init
   (add-hook 'prog-mode-hook 'company-mode)
@@ -73,7 +78,7 @@
 
 (use-package counsel
   :init
-  (setq counsel-find-file-at-point t))
+  (setq-default counsel-find-file-at-point t))
 
 (use-package default-text-scale
   :init
@@ -82,13 +87,13 @@
 (use-package evil
   :diminish undo-tree-mode
   :init
-  (setq evil-want-C-u-scroll nil)
-  (setq evil-want-C-d-scroll nil)
-  (setq evil-want-C-i-jump nil)
-  (setq undo-tree-visualizer-timestamps t)
-  (setq undo-tree-visualizer-diff t)
-  (setq isearch-forward t) ;; Required to search downward by default when using swiper & the `n` key...
-  (setq evil-ex-search-persistent-highlight nil)
+  (setq-default evil-want-C-u-scroll nil)
+  (setq-default evil-want-C-d-scroll nil)
+  (setq-default evil-want-C-i-jump nil)
+  (setq-default undo-tree-visualizer-timestamps t)
+  (setq-default undo-tree-visualizer-diff t)
+  (setq-default isearch-forward t) ;; Required to search downward by default when using swiper & the `n` key...
+  (setq-default evil-ex-search-persistent-highlight nil)
   (evil-mode t)
   (add-hook 'org-capture-mode-hook 'evil-insert-state)
   :config
@@ -97,6 +102,14 @@
     "SPC" 'evil-scroll-down
     "S-SPC" 'evil-scroll-up))
 
+(use-package evil-escape
+  :diminish evil-escape-mode
+  :after evil
+  :config
+  (setq-default evil-escape-key-sequence "jk")
+  (setq-default evil-escape-delay 0.1)
+  (setq-default evil-escape-unordered-key-sequence t)
+  (evil-escape-mode))
 
 (use-package evil-org
   :after evil
@@ -204,7 +217,6 @@
 (use-package nix-sandbox
   :defer t)
 
-
 (use-package psc-ide
   :defer t
   :diminish psc-ide-mode
@@ -267,7 +279,6 @@
 
 (use-package yasnippet
   :diminish 'yas-minor-mode
-  :defer t
   :init
   (yas-global-mode 1)
   :general
@@ -278,7 +289,7 @@
 (use-package zoom
   :diminish zoom-mode
   :init
-  (setq zoom-size '(0.618 . 0.618))
+  (setq-default zoom-size '(0.618 . 0.618))
   (zoom-mode t))
 
 ;; (use-package nand2tetris
@@ -296,33 +307,25 @@
 (general-override-mode)
 (defvar leader-key "ä") ;; `ä` on Svorak is roughly comparable to `,` on QWERTY, ergonomically
 
-;; (defun i3-windmove (dir &optional count)
-;;   "Change EMACS focus to the next window in direction DIR.
-;; If there is no window there, signal i3 to change window focus.
-;; COUNT is ignored currently."
-;;   (when (member dir '(left right up down))
-;;     (condition-case nil
-;;         (windmove-do-window-select dir)
-;;       (user-error
-;;        (call-process-shell-command
-;;         (concat "i3-msg 'focus " (symbol-name dir) "'")
-;;         nil 0 nil)))))
 
-;; (evil-define-command i3-window-left (count)
-;;   (interactive "p")
-;;   (i3-windmove 'left))
 
-;; (evil-define-command i3-window-right (count)
-;;   (interactive "p")
-;;   (i3-windmove 'right))
+(general-define-key
+ :prefix leader-key
+ :states 'normal
+ :keymaps 'global
+ "SPC" 'jump-to-register
+ "w" 'window-configuration-to-register
+ "p" 'point-to-register
+ "1" '(lambda (_) (interactive "p") (jump-to-register ?1))
+ "2" '(lambda (_) (interactive "p") (jump-to-register ?2))
+ "3" '(lambda (_) (interactive "p") (jump-to-register ?3))
+ "4" '(lambda (_) (interactive "p") (jump-to-register ?4))
+ "h" '(lambda (_) (interactive "p") (jump-to-register ?h))
+ "t" '(lambda (_) (interactive "p") (jump-to-register ?t))
+ "n" '(lambda (_) (interactive "p") (jump-to-register ?n))
+ "s" '(lambda (_) (interactive "p") (jump-to-register ?s))
+ )
 
-;; (evil-define-command i3-window-up (count)
-;;   (interactive "p")
-;;   (i3-windmove 'up))
-
-;; (evil-define-command i3-window-down (count)
-;;   (interactive "p")
-;;   (i3-windmove 'down))
 
 
 (general-define-key
@@ -331,17 +334,6 @@
   "s-j" 'evil-window-down
   "s-k" 'evil-window-up)
 
-;; (if (is-macbook)
-;;   (general-define-key
-;;     "s-h" 'evil-window-left
-;;     "s-l" 'evil-window-right
-;;     "s-j" 'evil-window-down
-;;     "s-k" 'evil-window-up)
-;;   (general-define-key
-;;     "s-h" 'i3-window-left
-;;     "s-l" 'i3-window-right
-;;     "s-j" 'i3-window-down
-;;     "s-k" 'i3-window-up))
 
 ;; Swiper search with / in normal mode
 (general-define-key
@@ -559,6 +551,18 @@ filling it with the contents of TEMPLATE if it does not exist."
 (require 'subr-x)
 (straight-use-package 'git)
 
+(defun org-git-version ()
+  "The Git version of org-mode.
+Inserted by installing org-mode or when a release is made."
+  (require 'git)
+  (let ((git-repo (expand-file-name
+                   "straight/repos/org/" user-emacs-directory)))
+    (string-trim
+     (git-run "describe"
+              "--match=release\*"
+              "--abbrev=6"
+              "HEAD"))))
+
 (defun org-release ()
     "The release version of org-mode.
 Inserted by installing org-mode or when a release is made."
@@ -589,9 +593,23 @@ Inserted by installing org-mode or when a release is made."
 
   (setq org-indirect-buffer-display 'current-window)
 
+  (setq org-tags-exclude-from-inheritance '("reading_now"))
+
+  (setq org-todo-keywords
+        '((sequence "TODO" "NEXT" "|" "DONE")
+          (sequence "WAITING" "HOLD" "|" "CANCELLED")))
+
+  (setq org-todo-keyword-faces
+        '(("NEXT" :foreground "white" :background "gray33" :weight bold)
+          ("WAITING" :foreground "lightgray" :weight bold)
+          ("HOLD" :foreground "darkgray" :weight bold)
+          ("CANCELLED"  :foreground "lightgray" :background "DarkRed" :weight bold)))
+
   (setq org-agenda-window-setup 'other-window)
   (setq org-agenda-restore-windows-after-quit t)
 
+
+  (require 'org-tempo)
 
   (require 'org-crypt)
   (org-crypt-use-before-save-magic)
@@ -649,6 +667,12 @@ Inserted by installing org-mode or when a release is made."
       "-" 'org-ctrl-c-minus
       "|" 'org-table-goto-column)
 
+    (general-evil-define-key 'normal 'evil-org-mode-map
+      "s-H" 'org-shiftmetaleft
+      "s-J" 'org-shiftmetadown
+      "s-K" 'org-shiftmetaup
+      "s-L" 'org-shiftmetaright)
+
     (general-evil-define-key '(normal insert) 'evil-org-mode-map
      "C-c C-q" 'counsel-org-tag)
 
@@ -679,7 +703,8 @@ Inserted by installing org-mode or when a release is made."
 ^_n_, _p_: Next/Previous link
 ^_o_: Open link at point
 
-^_H_, _J_, _K_, _L_: Shift TODO
+^_H_, _L_: Shift TODO
+^_J_, _K_: Move subtree up/down
 ^_t_: Cycle TODO
 
 ^_N_, _P_: Next/Previous code block
@@ -687,8 +712,8 @@ Inserted by installing org-mode or when a release is made."
       ;; basic navigation
       ("i" org-cycle)
       ("I" org-shifttab)
-      ("h" org-up-element )
-      ("l" org-down-element )
+      ("h" org-up-element)
+      ("l" org-down-element)
       ("j" org-forward-element)
       ("k" org-backward-element)
       ;; navigating links
@@ -705,8 +730,8 @@ Inserted by installing org-mode or when a release is made."
       ;; change todo state
       ("H" org-shiftleft)
       ("L" org-shiftright)
-      ("J" org-shiftdown)
-      ("K" org-shiftup)
+      ("J" org-move-subtree-down)
+      ("K" org-move-subtree-up)
       ("t" org-todo))
     ))
 

@@ -4,6 +4,7 @@
 # export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib:"$NIX_LINK/lib/pkgconfig"
 
 export PATH="$HOME/.local/bin/:$PATH"
+export PATH="$HOME/.npm/bin/:$PATH"
 export PATH="$HOME/.cargo/bin/:$PATH"
 
 # Use emacs for editing everything, with emacs daemon

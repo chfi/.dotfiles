@@ -61,9 +61,14 @@
 
 ;; ;;;;;;;;;;;;;;; Packages
 
+
+(use-package diminish)
+
 (use-package general)
 
-(use-package avy)
+(use-package avy
+  :config
+  (setq-default avy-keys '(97 111 101 117 105 104 116 110 115)))
 
 (use-package ace-window
   :general
@@ -74,7 +79,11 @@
   :init
   (add-hook 'prog-mode-hook 'company-mode)
   :config
-  (setq company-idle-delay 0))
+  (setq company-idle-delay 0)
+  :general
+  (:states '(normal insert)
+   "C-SPC" 'company-complete))
+
 
 (use-package counsel
   :init
@@ -106,10 +115,10 @@
   :diminish evil-escape-mode
   :after evil
   :config
-  (setq-default evil-escape-key-sequence "jk")
-  (setq-default evil-escape-delay 0.1)
-  (setq-default evil-escape-unordered-key-sequence t)
+  (setq-default evil-escape-key-sequence "uö")
+  (setq-default evil-escape-delay 0.2)
   (evil-escape-mode))
+
 
 (use-package evil-org
   :after evil
@@ -142,7 +151,8 @@
   ;; For some reason, having flycheck check syntax every new line in purescript-mode
   ;; is very slow -- but only on nixos, not the macbook!
   (unless (is-macbook)
-    (setq flycheck-check-syntax-automatically '(save idle-change mode-enabled))))
+    (setq flycheck-check-syntax-automatically '(save idle-change mode-enabled))
+    (setq flycheck-idle-change-delay 4.0)))
 
 (use-package haskell-mode
   :defer t)
@@ -208,6 +218,13 @@
 (use-package nixos-options
   :defer t)
 
+(use-package nov
+  :defer t
+  :commands 'nov-mode
+  :init
+  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+  (setq-default nov-text-width 80))
+
 (use-package company-nixos-options
   :defer t
   :after company
@@ -230,6 +247,8 @@
    "s-ö" 'psc-ide-goto-definition)
   :init
   (add-hook 'purescript-mode-hook 'psc-ide-mode))
+  ;; :config
+  ;; (setq psc-ide-editor-mode t))
 
 (use-package purescript-mode
   :defer t
@@ -350,15 +369,27 @@
   "<f2> i"  'counsel-info-lookup-symbol
   "<f2> u"  'counsel-unicode-char)
 
+
 (general-define-key
   :states 'normal
   :keymaps 'override
   "Å" 'pop-global-mark
   "R" 'ivy-resume ;; i have never, ever, used `evil-replace-state`.
-  "M-y" 'nil
+  "M-y" nil
+  "-" nil
+  "K" nil
+  ;; "<f3> <f3>" 'org-agenda-list
+  ;; "<f4>" 'org-agenda-list
   )
 
-;;  Staying commented since I never use anything but find-file
+
+
+(general-define-key
+ :states 'normal
+ :keymaps 'global
+ "s" 'ivy-switch-buffer
+ "S" 'counsel-find-file)
+
 ;; ;; <C-f> as prefix for finding files
 ;; (general-define-key
 ;;   :states 'normal
@@ -387,6 +418,9 @@
   "C-j" 'ivy-next-line
   "C-k" 'ivy-previous-line
   "C-'" 'ivy-avy
+  "M-." 'ivy-avy
+  "C-SPC" 'ivy-avy
+  "<backtab>" 'ivy-avy
   "C-s" 'ivy-dispatching-done)
 
 
@@ -439,6 +473,9 @@
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 
+;; enable abbrev-mode
+(add-hook 'prog-mode-hook 'abbrev-mode)
+
 ;; spaces instead of tabs and other default indent config
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 2)
@@ -462,11 +499,10 @@
 
 (setq auto-save-default nil) ; disable auto-save
 
+(setq register-preview-delay 0)
 
 (setq org-directory "~/Sync/org/")
 (add-hook 'after-init-hook 'org-agenda-list)
-
-
 
 ;; ;;;;;;;;;;;;; Journal management
 
@@ -490,52 +526,52 @@
       (make-directory today-dir t))
     today-dir))
 
-(defun open-tasks (&optional arg)
-  "Open my tasks list."
-  (interactive "p")
-  (find-file (concat org-directory "todo.org")))
+;; (defun open-tasks (&optional arg)
+;;   "Open my tasks list."
+;;   (interactive "p")
+;;   (find-file (concat org-directory "todo.org")))
 
-(defun journal-today-file (file)
-  "(Create and) open FILE in the journal directory corresponding to today's date."
-  (find-file (concat (cf/journal-today-get-dir) file)))
+;; (defun journal-today-file (file)
+;;   "(Create and) open FILE in the journal directory corresponding to today's date."
+;;   (find-file (concat (cf/journal-today-get-dir) file)))
 
-(defun journal-today-file-template (file template)
-  "(Create and) open FILE in the journal directory corresponding to today's date,
-filling it with the contents of TEMPLATE if it does not exist."
-  (let* ((today-dir (cf/journal-today-get-dir))
-         (filename (concat today-dir file)))
-    (if (file-exists-p filename)
-        (find-file filename)
-      (progn
-        (copy-file template filename)
-        (find-file filename)))))
+;; (defun journal-today-file-template (file template)
+;;   "(Create and) open FILE in the journal directory corresponding to today's date,
+;; filling it with the contents of TEMPLATE if it does not exist."
+;;   (let* ((today-dir (cf/journal-today-get-dir))
+;;          (filename (concat today-dir file)))
+;;     (if (file-exists-p filename)
+;;         (find-file filename)
+;;       (progn
+;;         (copy-file template filename)
+;;         (find-file filename)))))
 
-(defun journal-today-morning (&optional arg)
-  "Open the file for today's morning reflection."
-  (interactive "p")
-  (journal-today-file-template
-   "reflection-morning.org"
-   (concat journal-template-dir "reflection-morning.org")))
+;; (defun journal-today-morning (&optional arg)
+;;   "Open the file for today's morning reflection."
+;;   (interactive "p")
+;;   (journal-today-file-template
+;;    "reflection-morning.org"
+;;    (concat journal-template-dir "reflection-morning.org")))
 
 
-(defun journal-today-evening (&optional arg)
-  "Open the file for today's evening reflection."
-  (interactive "p")
-  (journal-today-file-template
-   "reflection-evening.org"
-   (concat journal-template-dir "reflection-evening.org")))
+;; (defun journal-today-evening (&optional arg)
+;;   "Open the file for today's evening reflection."
+;;   (interactive "p")
+;;   (journal-today-file-template
+;;    "reflection-evening.org"
+;;    (concat journal-template-dir "reflection-evening.org")))
 
-(defun journal-today-schedule (&optional arg)
-  "Open the file for today's block schedule."
-  (interactive "p")
-  (journal-today-file-template
-   "block-schedule.org"
-   (concat journal-template-dir "block-schedule.org")))
+;; (defun journal-today-schedule (&optional arg)
+;;   "Open the file for today's block schedule."
+;;   (interactive "p")
+;;   (journal-today-file-template
+;;    "block-schedule.org"
+;;    (concat journal-template-dir "block-schedule.org")))
 
-(defun journal-today-main (&optional arg)
-  "Open the file for today's main journal entries."
-  (interactive "p")
-  (journal-today-file "journal.org"))
+;; (defun journal-today-main (&optional arg)
+;;   "Open the file for today's main journal entries."
+;;   (interactive "p")
+;;   (journal-today-file "journal.org"))
 
 
 
@@ -586,6 +622,9 @@ Inserted by installing org-mode or when a release is made."
   (add-to-list 'org-agenda-files org-directory)
   (setq org-refile-targets (quote ((nil :maxlevel . 9)
                                    (org-agenda-files :maxlevel . 9))))
+
+  (setq org-startup-indented t)
+  (setq org-tags-column 1)
   (setq org-refile-use-outline-path t)
   (setq org-outline-path-complete-in-steps nil)
 
@@ -609,17 +648,24 @@ Inserted by installing org-mode or when a release is made."
   (setq org-agenda-restore-windows-after-quit t)
 
 
+  ;; for easy templates after org 9.1
   (require 'org-tempo)
 
   (require 'org-crypt)
   (org-crypt-use-before-save-magic)
   (setq org-crypt-key "christian@chfi.se")
 
+  (require 'org-habit)
+
+  ;; decrypt :crypt: entries with C-c C-c when point in entry body
   (add-hook 'org-ctrl-c-ctrl-c-final-hook
             (lambda ()
               (when (and (not (org-at-heading-or-item-p))
                          (org-at-encrypted-entry-p))
                 (org-decrypt-entry))))
+
+  ;; for capturing from firefox etc.
+  (require 'org-protocol)
 
 
   (org-babel-do-load-languages
@@ -627,23 +673,6 @@ Inserted by installing org-mode or when a release is made."
    '((haskell . t)
      (emacs-lisp . t))))
 
-
-(with-eval-after-load 'ox-latex
-  (setq org-latex-listings 'minted
-        org-latex-packages-alist '(("" "minted")))
-
-  (add-to-list 'org-latex-minted-langs
-               '(purescript "haskell"))
-  (add-to-list 'org-latex-minted-langs
-               '(javascript "javascript"))
-  (add-to-list 'org-latex-minted-langs
-               '(haskell "haskell")))
-;;       org-latex-pdf-process
-;;       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-;;         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f")))
-
-(setq org-startup-indented t)
-(setq org-tags-column 1)
 
 (setq org-capture-templates
       '(("t" "Todo" entry (file+headline "~/Sync/org/todo.org" "Tasks")
@@ -656,7 +685,92 @@ Inserted by installing org-mode or when a release is made."
 | Mood | Before % | After % |
 |-
 | %?     |          |         |\n
-** Entry \n")))
+** Entry \n")
+
+        ("l" "Add entry to library.org")
+
+        ("la" "Add scientific publication with DOI" entry
+         (file+olp (lambda () (concat org-directory "library/library.org")) "Articles" "Uncategorized")
+         "* %^{Title}
+:PROPERTIES:
+:doi:  %^{DOI}
+:year: %^{year}
+:END:
+%?\n")
+
+        ("lb" "Add book" entry
+         (file+olp (lambda () (concat org-directory "library/library.org")) "Books" "Uncategorized")
+         "* %^{Title}
+:PROPERTIES:
+:author: %^{author}
+:year: %^{year}
+:END:
+%?\n")
+
+
+        ("a" "Activity monitoring and logs")
+
+        ("an" "Next activity" entry
+         (file+headline (lambda () (concat (cf/journal-today-get-dir) "journal.org")) "Monitoring")
+         "* %(time-of-day-string) [/]
+
+** Evaluation
+*** Have you been mindful? Are you now?
+If not, meditate for five minutes. Focus on your body, or your breathing, or your sensory inputs.
+- [ ] I have been mindful
+- [ ] I am now mindful
+
+**** Is it easy for you to be with discomfort, and not be controlled by it?
+- [ ] Yes
+**** Is it easy for you to concentrate?
+- [ ] Yes
+**** Is it easy for you to dismiss distractions and return to focus?
+- [ ] Yes
+
+*** Have you used the last 30 minutes as planned?
+- [ ] Yes
+
+**** If not, have you been distracted? By what?
+
+**** Why did you get distracted? What emotions and cognitions led you?
+
+*** Have you blocked distracting sites, apps, etc.?
+- [ ] Yes
+
+*** Have you put away other distractions, such as books?
+- [ ] Yes
+
+*** Have you set a timer for the next period?
+- [ ] Yes
+
+*Hours of work remaining today: %?*
+
+** What are you going to be doing the next 30 minutes?\n
+** How confident are you in that you will follow this plan?
+\n\n")
+
+        ("al" "Activity log" entry
+         (file (lambda () (concat (cf/journal-today-get-dir) "journal.org")))
+         "* %(time-of-day-string)
+** What have you been doing the past hour?
+%?\n
+** How aware are you? Have you been mindful of your experiences?\n
+** What are you doing now, and why?\n
+** What *should* you be doing now?\n
+** Will you do what you should, now? If not, why?
+- [ ] I've enabled OFFTIME, Leechblock, and killed irrelevant buffers and apps.
+\n\n")
+
+
+        ("p" "Protocol" entry
+         (file+headline (lambda () (concat org-directory "notes.org")) "Inbox")
+         "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
+
+        ("L" "Protocol Link" entry
+         (file+headline (lambda () (concat org-directory "notes.org")) "Inbox")
+         "* %? [[%:link][%:description]] \nCaptured On: %U")
+        ))
+
 
 
 
@@ -757,7 +871,9 @@ buffer is not visiting a file."
 
 (use-package zenburn-theme
   :init
+;; zenburn-default-colors-alist
   (load-theme 'zenburn t t))
+
 
 (use-package material-theme
   :init
@@ -774,9 +890,55 @@ buffer is not visiting a file."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ansi-color-faces-vector
+   [default bold shadow italic underline bold bold-italic bold])
+ '(ansi-color-names-vector
+   ["#3F3F3F" "#CC9393" "#7F9F7F" "#F0DFAF" "#8CD0D3" "#DC8CC3" "#93E0E3" "#DCDCCC"])
+ '(avy-keys (quote (97 111 101 117 105 104 116 110 115)))
+ '(company-quickhelp-color-background "#4F4F4F")
+ '(company-quickhelp-color-foreground "#DCDCCC")
+ '(custom-safe-themes
+   (quote
+    ("a1e99cb36d6235abbe426a0a96fc26c006306f6b9d2a64c2435363350a987b4c" default)))
+ '(fci-rule-color "#383838")
+ '(hl-sexp-background-color "#1c1f26")
+ '(js-indent-level 2)
+ '(nrepl-message-colors
+   (quote
+    ("#CC9393" "#DFAF8F" "#F0DFAF" "#7F9F7F" "#BFEBBF" "#93E0E3" "#94BFF3" "#DC8CC3")))
  '(org-agenda-files
    (quote
-    ("~/Sync/org/journal/2018-04-14/block-schedule.org" "~/Sync/org/journal/2018-04-13/block-schedule.org" "/home/christian/Sync/org/genome-browser.org" "/home/christian/Sync/org/groceries.org" "/home/christian/Sync/org/index.org" "/home/christian/Sync/org/refile.org" "/home/christian/Sync/org/todo.org"))))
+    ("~/Sync/org/notes.org" "/home/christian/Sync/org/genome-browser.org" "~/Sync/org/health.org" "~/Sync/org/reading/books/Mad_Science.org" "~/Sync/org/reading.org" "~/Sync/org/thesis.org" "~/Sync/org/common.org" "~/Sync/org/journal/2018-04-14/block-schedule.org" "~/Sync/org/journal/2018-04-13/block-schedule.org" "/home/christian/Sync/org/groceries.org" "/home/christian/Sync/org/todo.org")))
+ '(pdf-view-midnight-colors (quote ("#DCDCCC" . "#383838")))
+ '(safe-local-variable-values
+   (quote
+    ((eval let nil
+           (org-babel-goto-named-src-block "setup-export-class")
+           (org-babel-execute-src-block))
+     (bibtex-completion-cite-prompt-for-optional-arguments)
+     (bibtex-completion-bibliography . "./bibliography.bib"))))
+ '(vc-annotate-background "#2B2B2B")
+ '(vc-annotate-color-map
+   (quote
+    ((20 . "#BC8383")
+     (40 . "#CC9393")
+     (60 . "#DFAF8F")
+     (80 . "#D0BF8F")
+     (100 . "#E0CF9F")
+     (120 . "#F0DFAF")
+     (140 . "#5F7F5F")
+     (160 . "#7F9F7F")
+     (180 . "#8FB28F")
+     (200 . "#9FC59F")
+     (220 . "#AFD8AF")
+     (240 . "#BFEBBF")
+     (260 . "#93E0E3")
+     (280 . "#6CA0A3")
+     (300 . "#7CB8BB")
+     (320 . "#8CD0D3")
+     (340 . "#94BFF3")
+     (360 . "#DC8CC3"))))
+ '(vc-annotate-very-old-color "#DC8CC3"))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

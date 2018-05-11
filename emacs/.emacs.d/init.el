@@ -908,7 +908,7 @@ buffer is not visiting a file."
     ("#CC9393" "#DFAF8F" "#F0DFAF" "#7F9F7F" "#BFEBBF" "#93E0E3" "#94BFF3" "#DC8CC3")))
  '(org-agenda-files
    (quote
-    ("~/Sync/org/notes.org" "/home/christian/Sync/org/genome-browser.org" "~/Sync/org/health.org" "~/Sync/org/reading/books/Mad_Science.org" "~/Sync/org/reading.org" "~/Sync/org/thesis.org" "~/Sync/org/common.org" "~/Sync/org/journal/2018-04-14/block-schedule.org" "~/Sync/org/journal/2018-04-13/block-schedule.org" "/home/christian/Sync/org/groceries.org" "/home/christian/Sync/org/todo.org")))
+    ("~/Sync/org/notes.org" "~/Sync/org/genome-browser.org" "~/Sync/org/health.org" "~/Sync/org/reading/books/Mad_Science.org" "~/Sync/org/reading.org" "~/Sync/org/thesis.org" "~/Sync/org/common.org" "~/Sync/org/journal/2018-04-14/block-schedule.org" "~/Sync/org/journal/2018-04-13/block-schedule.org" "~/Sync/org/groceries.org" "~/Sync/org/todo.org")))
  '(pdf-view-midnight-colors (quote ("#DCDCCC" . "#383838")))
  '(safe-local-variable-values
    (quote
